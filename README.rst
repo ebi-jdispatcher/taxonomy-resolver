@@ -35,7 +35,7 @@ Getting Started
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_ and preparing the data:
 
-code-block:: bash
+.. code-block:: bash
 
   cd ncbi-taxonomy
   # download the dump from the ftp
