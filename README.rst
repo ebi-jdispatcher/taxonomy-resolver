@@ -12,7 +12,7 @@ Taxonomy Resolver builds lists of taxonomy Identifiers based on the `NCBI Taxono
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.6+ (recommended version 3.7). Additional requirements, which will be
+Installation requires `Python`_ 3.6+ (recommended version 3.8). Additional requirements, which will be
 downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
