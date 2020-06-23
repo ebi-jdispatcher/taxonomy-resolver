@@ -2,7 +2,17 @@
 Taxonomy Resolver
 #################
 
-Taxonomy Resolver builds lists of taxonomy Identifiers based on the `NCBI Taxonomy`_ Database.
+Taxonomy Resolver builds NCBI Taxonomy Trees and lists of Taxonomy Identifiers (TaxIDs)
+based on the `NCBI Taxonomy`_ Database.
+
+Main features of Taxonomy Resolver are:
+
+  1. Downloading taxonomy dump files from the `NCBI ftp server`_
+  2. Building NCBI Taxonomy Trees (with `anytree`_)
+  3. Writing out the Tree in `json` or `pickle` formats
+  4. Filtering the Tree based on a list of TaxIDs
+  5. Quick lookup to see if a TaxID exists in the Tree
+  6. Generate lists of all children TaxIDs that compose a particular Node
 
 
 .. contents:: **Table of Contents**
@@ -104,3 +114,4 @@ Apache License 2.0. See `license`_ for details.
 .. _Python: https://www.python.org/
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
+.. _anytree: https://github.com/c0fec0de/anytree
