@@ -49,7 +49,7 @@ def cli():
 @add_common(common_options)
 @click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
               multiple=False, help="Path to output Tax dump file.")
-@click.option('-outformat', '--outformat', 'outformat', type=str, default="json", required=True,
+@click.option('-outf', '--outformat', 'outformat', type=str, default="json", required=True,
               multiple=False, help="Output format (currently: 'zip' or 'tar.gz').")
 def download(outfile: str, outformat: str,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
@@ -70,16 +70,18 @@ def download(outfile: str, outformat: str,
 @add_common(common_options)
 @click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
               multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
-                                    "(currently: 'json' or 'pickle')"))
+                                    "(currently: 'json' or 'pickle')."))
 @click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
               multiple=False, help="Path to output file.")
-@click.option('-informat', '--informat', 'informat', type=str, default="xml", required=True,
-              multiple=False, help="Input format (currently: 'json' or 'pickle'")
-@click.option('-outformat', '--outformat', 'outformat', type=str, default="json", required=True,
+@click.option('-inf', '--informat', 'informat', type=str, default="json", required=True,
+              multiple=False, help="Input format (currently: 'json' or 'pickle').")
+@click.option('-outf', '--outformat', 'outformat', type=str, default="json", required=True,
               multiple=False, help="Output format (currently: 'json' or 'pickle').")
-def build(infile: str, outfile: str, informat: str, outformat: str,
+@click.option('-taxid', '--taxidlist', 'taxidlist', type=str, required=False,
+              multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
+def build(infile: str, outfile: str, informat: str, outformat: str, taxidlist: str,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
-    """TBuild NCBI Taxonomy Tree in JSON or Pickle."""
+    """Build NCBI Taxonomy Tree in JSON or Pickle."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 
@@ -89,13 +91,18 @@ def build(infile: str, outfile: str, informat: str, outformat: str,
 
     resolver = TaxonResolver(logging)
     if informat:
-        tree = resolver.load(infile, informat)
+        resolver.load(infile, informat)
         logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
     else:
-        tree = resolver.build(infile)
+        resolver.build(infile)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
 
-    resolver.write(tree, outfile, outformat)
+    if taxidlist:
+        validate_inputs_outputs(inputfile=taxidlist)
+        resolver.filter(taxidlist)
+        logging.info(f"Filtered NCBI Taxonomy with {taxidlist}.")
+
+    resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
 
 
