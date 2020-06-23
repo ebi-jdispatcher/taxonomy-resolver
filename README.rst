@@ -15,6 +15,8 @@ Main features of Taxonomy Resolver are:
 6. Generate lists of all children TaxIDs that compose a particular Node
 
 
+------------
+
 .. contents:: **Table of Contents**
    :depth: 3
 
