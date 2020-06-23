@@ -10,6 +10,7 @@ NCBI Taxonomy Resolver
 
 import io
 import json
+import copy
 import pickle
 import zipfile
 import logging
@@ -154,9 +155,48 @@ def write_tree(tree_dict: dict, node: str,
             print(exporter.write(tree_dict[node], outfile))
 
 
+def filter_tree(tree_dict: dict, inputfile: str,
+                sep: str = " ", indx: int = 1) -> dict:
+    """
+    Writes Tree to file.
+
+    :param tree_dict: dict of anytree node objects
+    :param inputfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: dict of anytree node objects
+    """
+    taxon_nodes = defaultdict(list)
+    tax_ids = []
+    with open(inputfile, "r") as infile:
+        for line in infile:
+            line = line.rstrip()
+            tax_id = line.split(sep)[indx]
+            tax_ids.append(tax_id)
+
+    # get list of all required (and unique) tax_id parents
+    tax_id_parents = []
+    for anytree_node in tree_dict.values():
+        if anytree_node.name in tax_ids:
+            # get full path and use it to capture all
+            # levels in the hierarchy that are required
+            node_path = anytree_node.path[-1]
+            anytree_separator = "/"
+            for tax_id in node_path.split(anytree_separator)[1:]:
+                tax_id_parents.append(tax_id)
+
+    tax_id_parents = list(set(tax_id_parents))
+    for tax_id in tax_id_parents:
+        taxon_nodes[tax_id] = tree_dict[tax_id]
+
+    return taxon_nodes
+
+
 class TaxonResolver(object):
     def __init__(self, logging=None, **kwargs):
         self.tree = None
+        self._full_tree = None
         self.node = "root"
         self.logging = logging
         self.kwargs = kwargs
@@ -190,9 +230,18 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Output format '{outputformat}' is not valid!")
 
-    # TODO
-    def filter(self):
-        pass
+    def filter(self, inputfile):
+        """Re-build tree ignoring Taxonomy IDs provided."""
+        # keep a copy of the original (full) tree
+        self._full_tree = copy.copy(self.tree)
+        if not self._full_tree:
+            message = ("The Taxonomy Tree needs to be built "
+                       "before 'filter' can be called.")
+            if self.logging:
+                logging.warning(message)
+            else:
+                print(message)
+        self.tree = filter_tree(self._full_tree, inputfile)
 
     # TODO
     def search(self):
