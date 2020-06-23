@@ -33,15 +33,31 @@ A good approach is to set a virtual environment:
 Getting Started
 ===============
 
-Getting the NCBI Taxonomy Data from the `NCBI ftp server`_ and preparing the data:
+Taxonomy Resolver can be used as Python module or via the CLI provided. Examples below are
+provided running the CLI, but looking over the CLI source code illustrates most of the
+functionality and how Taxonomy Resolver can be used as a module.
+
+
+Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  mkdir -p ncbi-taxonomy && cd ncbi-taxonomy
-  # download the dump from the ftp
-  wget https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz
-  # then
-  gunzip -c taxdump.tar.gz | tar xf -
+  python taxonomy_resolver_cli.py download -out ./ncbi-taxonomy/taxdump.zip
+
+
+Building a Tree structure from the `taxdump.zip` file and saving it in JSON (or alternatively in `pickle` format):
+
+.. code-block:: bash
+
+  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/taxdump.zip -out ./ncbi-taxonomy/tree.json -outformat json
+
+
+Loading a built Tree structure in JSON and saving it in `pickle` format:
+
+.. code-block:: bash
+
+  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.json -informat json -out ./ncbi-taxonomy/tree.pickle -outformat pickle
+
 
 
 Bug Tracking
@@ -60,6 +76,7 @@ Credits
 =======
 
 * Fábio Madeira <fmadeira@ebi.ac.uk>
+* Adrian Tivey <ativey@ebi.ac.uk>
 
 Licensing
 =========
@@ -69,6 +86,7 @@ Apache License 2.0. See `license`_ for details.
 .. links
 .. _license: LICENSE
 .. _issue tracker: ../../issues
+.. _requirements.txt: requirements.txt
 .. _Python: https://www.python.org/
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
