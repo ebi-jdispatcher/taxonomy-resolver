@@ -49,15 +49,29 @@ Building a Tree structure from the `taxdump.zip` file and saving it in JSON (or 
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/taxdump.zip -out ./ncbi-taxonomy/tree.json -outformat json
+  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/taxdump.zip -out ./ncbi-taxonomy/tree.json -outf json
 
 
 Loading a built Tree structure in JSON and saving it in `pickle` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.json -informat json -out ./ncbi-taxonomy/tree.pickle -outformat pickle
+  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.json -inf json -out ./ncbi-taxonomy/tree.pickle -outf pickle
 
+
+Filtering an existing Tree structure in `pickle` format by passing a file containing a list of TaxIDs, and saving it in `pickle` format:
+
+.. code-block:: bash
+
+  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.pickle -inf pickle -out ./ncbi-taxonomy/tree_filtered.pickle -outf pickle -taxidf ./ncbi-taxonomy/taxids_filter.txt
+
+
+Generating a list of TaxIDs that compose the hierachy based on list of TaxIDs passed to search
+a filtered Tree in `pickle` format:
+
+.. code-block:: bash
+
+  python taxonomy_resolver_cli.py search -in ./ncbi-taxonomy/tree_filtered.pickle -inf pickle -taxids ./ncbi-taxonomy/taxids_search.txt -taxidf ./ncbi-taxonomy/taxids_filter.txt -out ./ncbi-taxonomy/taxids_list.txt
 
 
 Bug Tracking
