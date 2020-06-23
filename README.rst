@@ -9,7 +9,7 @@ Main features of Taxonomy Resolver are:
 
 1. Downloading taxonomy dump files from the `NCBI ftp server`_
 2. Building NCBI Taxonomy Trees (with `anytree`_)
-3. Writing out the Tree in `json` or `pickle` formats
+3. Writing out the Tree in ``json`` or ``pickle`` formats
 4. Filtering the Tree based on a list of TaxIDs
 5. Quick lookup to see if a TaxID exists in the Tree
 6. Generate lists of all children TaxIDs that compose a particular Node
@@ -57,29 +57,29 @@ Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
   python taxonomy_resolver_cli.py download -out ./ncbi-taxonomy/taxdump.zip
 
 
-Building a Tree structure from the `taxdump.zip` file and saving it in JSON (or alternatively in `pickle` format):
+Building a Tree structure from the ``taxdump.zip`` file and saving it in JSON (or alternatively in `pickle` format):
 
 .. code-block:: bash
 
   python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/taxdump.zip -out ./ncbi-taxonomy/tree.json -outf json
 
 
-Loading a built Tree structure in JSON and saving it in `pickle` format:
+Loading a built Tree structure in JSON and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
   python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.json -inf json -out ./ncbi-taxonomy/tree.pickle -outf pickle
 
 
-Filtering an existing Tree structure in `pickle` format by passing a file containing a list of TaxIDs, and saving it in `pickle` format:
+Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
   python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.pickle -inf pickle -out ./ncbi-taxonomy/tree_filtered.pickle -outf pickle -taxidf ./ncbi-taxonomy/taxids_filter.txt
 
 
-Generating a list of TaxIDs that compose the hierachy based on list of TaxIDs passed to search
-a filtered Tree in `pickle` format:
+Generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs passed to search
+a filtered Tree in ``pickle`` format:
 
 .. code-block:: bash
 
