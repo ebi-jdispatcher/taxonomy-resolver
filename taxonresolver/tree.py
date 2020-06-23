@@ -19,6 +19,7 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
+from anytree.search import findall_by_attr
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
@@ -158,7 +159,7 @@ def write_tree(tree_dict: dict, node: str,
 def filter_tree(tree_dict: dict, inputfile: str,
                 sep: str = " ", indx: int = 1) -> dict:
     """
-    Writes Tree to file.
+    Filters an existing Tree based on a List of TaxIDs file.
 
     :param tree_dict: dict of anytree node objects
     :param inputfile: Path to inputfile, which is a list of
@@ -181,9 +182,7 @@ def filter_tree(tree_dict: dict, inputfile: str,
         if anytree_node.name in tax_ids:
             # get full path and use it to capture all
             # levels in the hierarchy that are required
-            node_path = anytree_node.path[-1]
-            anytree_separator = "/"
-            for tax_id in node_path.split(anytree_separator)[1:]:
+            for tax_id in str(anytree_node.path[-1]).split("'")[1].split("/")[1:]:
                 tax_id_parents.append(tax_id)
 
     tax_id_parents = list(set(tax_id_parents))
@@ -193,6 +192,36 @@ def filter_tree(tree_dict: dict, inputfile: str,
     return taxon_nodes
 
 
+def search_tree(tree_dict: dict, tax_id: str, inputfile: str,
+                sep: str = " ", indx: int = 1) -> list:
+    """
+    Searches an existing Tree and produces a list of TaxIDs.
+    Checks if TaxID is in the list, if so provides as is, else,
+        searches all children in the list that compose that node.
+
+    :param tree_dict: dict of anytree node objects
+    :param tax_id: TaxID to search with
+    :param inputfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers (optional)
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: list of TaxIDs
+    """
+
+    tax_ids = []
+    if inputfile:
+        with open(inputfile, "r") as infile:
+            for line in infile:
+                line = line.rstrip()
+                tax_id = line.split(sep)[indx]
+                tax_ids.append(tax_id)
+
+    if tax_id in tax_ids:
+        return [tax_id]
+    else:
+        nodes = findall_by_attr(tree_dict["1"], tax_id)
+        children = [str(node.path[-1]).split("'")[1].split("/")[-1] for node in nodes]
+        return [tax_id for tax_id in children if tax_id in tax_ids]
 class TaxonResolver(object):
     def __init__(self, logging=None, **kwargs):
         self.tree = None
@@ -207,11 +236,11 @@ class TaxonResolver(object):
         download_taxonomy_dump(outputfile, outputformat)
 
     def build(self, inputfile):
-        """Build tree from NCBI dump file."""
+        """Build a tree from NCBI dump file."""
         self.tree = build_tree(inputfile, self.logging)
 
     def load(self, inputfile, inputformat):
-        """Load tree from JSON or Pickle files."""
+        """Load a tree from JSON or Pickle files."""
         if inputformat in self._valid_formats:
             self.tree = load_tree(inputfile, inputformat, **self.kwargs)
         else:
@@ -219,7 +248,7 @@ class TaxonResolver(object):
                 self.logging(f"Input format '{inputformat}' is not valid!")
 
     def write(self, outputfile, outputformat, node="root"):
-        """Write tree in JSON or Pickle formats."""
+        """Write a tree in JSON or Pickle formats."""
         if outputformat in self._valid_formats:
             self.node = node
             if self.node == "root":
@@ -230,8 +259,8 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Output format '{outputformat}' is not valid!")
 
-    def filter(self, inputfile):
-        """Re-build tree ignoring Taxonomy IDs provided."""
+    def filter(self, taxidfilter):
+        """Re-build a tree ignoring Taxonomy IDs provided."""
         # keep a copy of the original (full) tree
         self._full_tree = copy.copy(self.tree)
         if not self._full_tree:
@@ -241,8 +270,9 @@ class TaxonResolver(object):
                 logging.warning(message)
             else:
                 print(message)
-        self.tree = filter_tree(self._full_tree, inputfile)
+        self.tree = filter_tree(self.tree, taxidfilter)
 
-    # TODO
-    def search(self):
-        pass
+    def search(self, taxidsearch, taxidfilter):
+        """Search a Tree based on a taxid and a list of TaxIds"""
+        return search_tree(self.tree, taxidsearch, taxidfilter)
+
