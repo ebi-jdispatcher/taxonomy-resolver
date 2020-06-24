@@ -46,36 +46,35 @@ Getting Started
 ===============
 
 Taxonomy Resolver can be used as Python module or via the CLI provided. Examples below are
-provided running the CLI, but looking over the CLI source code illustrates most of the
-functionality and how Taxonomy Resolver can be used as a module.
+provided running the CLI.
 
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py download -out ./ncbi-taxonomy/taxdump.zip
+  python taxonomy_resolver_cli.py download -out taxdump.zip
 
 
-Building a Tree structure from the ``taxdump.zip`` file and saving it in JSON (or alternatively in `pickle` format):
+Building a Tree structure from the ``taxdump.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/taxdump.zip -out ./ncbi-taxonomy/tree.json -outf json
+  python taxonomy_resolver_cli.py build -in taxdump.zip -out tree.json -outf json
 
 
 Loading a built Tree structure in JSON and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.json -inf json -out ./ncbi-taxonomy/tree.pickle -outf pickle
+  python taxonomy_resolver_cli.py build -in tree.json -inf json -out tree.pickle -outf pickle
 
 
 Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in ./ncbi-taxonomy/tree.pickle -inf pickle -out ./ncbi-taxonomy/tree_filtered.pickle -outf pickle -taxidf ./ncbi-taxonomy/taxids_filter.txt
+  python taxonomy_resolver_cli.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf taxids_filter.txt
 
 
 Generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs passed to search
@@ -83,7 +82,7 @@ a filtered Tree in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py search -in ./ncbi-taxonomy/tree_filtered.pickle -inf pickle -taxids ./ncbi-taxonomy/taxids_search.txt -taxidf ./ncbi-taxonomy/taxids_filter.txt -out ./ncbi-taxonomy/taxids_list.txt
+  python taxonomy_resolver_cli.py search -in tree_filtered.pickle -inf pickle -taxids taxids_search.txt -taxidf taxids_filter.txt -out taxids_list.txt
 
 
 Bug Tracking
