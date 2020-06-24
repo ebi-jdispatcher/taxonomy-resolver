@@ -157,6 +157,30 @@ including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's 
   # >>> (Node()..., Node()...)
 
 
+CLI
+---
+
+Examples below are provided running the CLI. Explore the CLI and each command by running
+``python taxonomy_resolver.py (COMMAND) --help`` :
+
+.. code-block:: bash
+
+  Usage: taxonomy_resolver.py [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
+                              [ARGS]...]...
+
+    Taxonomy Resolver: Build NCBI Taxonomy Trees and lists of TaxIDs.
+
+  Options:
+    --version   Show the version and exit.
+    -h, --help  Show this message and exit.
+
+  Commands:
+    build     Build NCBI Taxonomy Tree in JSON or Pickle.
+    download  Download the NCBI Taxonomy dump file.
+    search    Searches a NCBI Taxonomy Tree and writes a list of TaxIDs.
+    validate  Validates a list of TaxIDs against a NCBI Taxonomy Tree.
+
+
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
