@@ -41,6 +41,23 @@ A good approach is to set a virtual environment:
   pip freeze > requirements_from_freeze.txt
   deactivate
 
+Installing
+----------
+
+Download the source code or clone the repository, then simply run:
+
+.. code-block:: bash
+
+  python setup.py
+
+``Taxonomy Resolver`` module will be available within your environment.
+
+(TODO - Add the module to pypi!) Alternatively ``Taxonomy Resolver`` can be installed with pip:
+
+.. code-block:: bash
+
+  pip install taxonresolver
+
 
 Getting Started
 ===============
