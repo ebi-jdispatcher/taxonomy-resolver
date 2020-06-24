@@ -222,6 +222,36 @@ def search_tree(tree_dict: dict, tax_id: str, inputfile: str,
         nodes = findall_by_attr(tree_dict["1"], tax_id)
         children = [str(node.path[-1]).split("'")[1].split("/")[-1] for node in nodes]
         return [tax_id for tax_id in children if tax_id in tax_ids]
+
+
+def validate_tree(tree_dict: dict, tax_id: str, inputfile: str or None,
+                  sep: str = " ", indx: int = 1) -> bool:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree_dict: dict of anytree node objects
+    :param tax_id: TaxID to search with
+    :param inputfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: boolean
+    """
+
+    tax_ids = []
+    if inputfile:
+        with open(inputfile, "r") as infile:
+            for line in infile:
+                line = line.rstrip()
+                tax_id = line.split(sep)[indx]
+                tax_ids.append(tax_id)
+
+    if tax_id in tax_ids or tax_id in tree_dict:
+        return True
+    else:
+        return False
+
+
 class TaxonResolver(object):
     def __init__(self, logging=None, **kwargs):
         self.tree = None
@@ -276,3 +306,6 @@ class TaxonResolver(object):
         """Search a Tree based on a taxid and a list of TaxIds"""
         return search_tree(self.tree, taxidsearch, taxidfilter)
 
+    def validate(self, taxidsearch, taxidfilter):
+        """Validate a list of TaxIDs agains a Tree."""
+        return validate_tree(self.tree, taxidsearch, taxidfilter)

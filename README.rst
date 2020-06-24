@@ -85,6 +85,13 @@ a filtered Tree in ``pickle`` format:
   python taxonomy_resolver_cli.py search -in tree_filtered.pickle -inf pickle -taxids taxids_search.txt -taxidf taxids_filter.txt -out taxids_list.txt
 
 
+Validating a list of TaxIDs against a full (or filtered) Tree in ``pickle`` format:
+
+.. code-block:: bash
+
+  python taxonomy_resolver_cli.py validate -in tree.pickle -inf pickle -taxids taxids_search.txt
+
+
 Bug Tracking
 ============
 

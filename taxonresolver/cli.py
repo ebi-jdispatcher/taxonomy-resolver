@@ -144,5 +144,39 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilt
     logging.info(f"Wrote list of TaxIDS in {outfile}.")
 
 
+@cli.command("validate")
+@click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
+              multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
+                                    "(currently: 'json' or 'pickle')."))
+@click.option('-inf', '--informat', 'informat', type=str, default="json", required=True,
+              multiple=False, help="Input format (currently: 'json' or 'pickle').")
+@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=True,
+              multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
+@click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
+              multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
+@add_common(common_options)
+def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str,
+             log_level: str = "INFO", log_output: str = None, quiet: bool = False):
+    """Validates a list of TaxIDs against a NCBI Taxonomy Tree."""
+
+    logging = load_logging(log_level, log_output, disabled=quiet)
+
+    # input options validation
+    validate_inputs_outputs(inputfile=infile)
+    validate_inputs_outputs(inputfile=taxidsearch)
+    if taxidfilter:
+        validate_inputs_outputs(inputfile=taxidfilter)
+    logging.info("Validated inputs.")
+
+    resolver = TaxonResolver(logging)
+
+    resolver.load(infile, informat)
+    logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
+
+    valid = resolver.validate(taxidsearch, taxidfilter)
+    print(valid)
+    logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
+
+
 if __name__ == '__main__':
     cli()
