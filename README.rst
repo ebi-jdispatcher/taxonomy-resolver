@@ -62,8 +62,100 @@ Download the source code or clone the repository, then simply run:
 Getting Started
 ===============
 
-Taxonomy Resolver can be used as Python module or via the CLI provided. Examples below are
-provided running the CLI.
+Taxonomy Resolver can be used as Python module or via the CLI provided.
+
+Module
+------
+
+Example of typical usage of the Taxonomy Resolver module is provided below:
+
+.. code-block:: python
+
+  from taxonresolver import TaxonResolver
+
+  resolver = TaxonResolver()
+
+  # Download the NCBI Taxonomy Data Dump
+  dumpfile = "taxdump.zip"
+  resolver.download(dumpfile, "zip")
+
+  # Building the NCBI Taxonomy Tree (can take several minutes to build)
+  resolver.build(dumpfile)
+  # the resolver.tree can be saved to file at this stage with `resolver.write()`
+
+  # Filtering the Tree based on a set of local TaxIDs (species-level)
+  # A minimal Tree is constructed that covers (hierarchically) all TaxIDs provided
+  filterfile = "taxids_filter.txt"
+  resolver.filter(filterfile)
+
+  # Saving the filtered Tree as JSON format
+  treefile = "tree_filtered.json"
+  resolver.write(treefile, "json")
+
+  # Get a list of TaxIDs (species-level) that compose a set of TaxIDs
+  searchfile = "taxids_search.txt"
+  tax_ids = resolver.search(searchfile, filterfile) # the filterfile is optional
+  # Write the TaxIDs to a file
+  taxidsfile = "taxids_list.txt"
+  with open(outfile, "w") as outfile:
+      outfile.write("\n".join(tax_ids))
+
+
+When a Taxonomy Tree is already available one can simply load it with ``resolver.load()``:
+
+.. code-block:: python
+
+  from taxonresolver import TaxonResolver
+
+  resolver = TaxonResolver()
+
+  # Loading the NCBI Taxonomy Tree
+  treefile = "tree.pickle"
+  resolver.load(treefile, "pickle")
+
+  # Filtering the Tree based on a set of local TaxIDs (species-level)
+  filterfile = "taxids_filter.txt"
+  resolver.filter(filterfile)
+
+  # Validate a set of TaxIDs against the Tree and against a list of TaxIDs (species-level)
+  validatefile = "taxids_validate.txt"
+  valid = resolver.validate(validatefile, filterfile) # the filterfile is optional
+  if valid:
+    print(f"TaxIDs in {validatefile} are valid!")
+
+
+Because each node in Taxonomy Resolver is an `anytree`_ node, all anytree features are available,
+including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's documentation`_ for more information on what is possible.
+
+.. code-block:: python
+
+  from taxonresolver import TaxonResolver
+
+  resolver = TaxonResolver()
+
+  # Loading the NCBI Taxonomy Tree
+  treefile = "tree.pickle"
+  resolver.load(treefile, "pickle")
+
+  # Tree is a dictionary of anytree Nodes
+  tree = resolver.tree
+
+  # Display the path of particular node
+  # ( "9606" is the TaxID of species 'homo sapiens')
+  tree["9606"].path
+  # >>> (Node('/////'))
+
+  # Display the parent node
+  tree["9606"].parent
+  # >>> (Node('/////'))
+
+  # Search for Nodes that match a particular TaxID
+  from anytree.search import findall
+  # (searching on the full Tree based on the TaxID "1", which is the root)
+  # ( "40674" is the TaxID of class 'Mammalia')
+  tree["1"].findall("40674", maxlevel=3)
+  # >>> (Node()..., Node()...)
+
 
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
@@ -140,3 +232,5 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _anytree: https://github.com/c0fec0de/anytree
+.. _anytree's documentation: https://anytree.readthedocs.io/
+
