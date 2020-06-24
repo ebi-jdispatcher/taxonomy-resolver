@@ -186,28 +186,28 @@ Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py download -out taxdump.zip
+  python taxonomy-resolver.py download -out taxdump.zip
 
 
 Building a Tree structure from the ``taxdump.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in taxdump.zip -out tree.json -outf json
+  python taxonomy-resolver.py build -in taxdump.zip -out tree.json -outf json
 
 
 Loading a built Tree structure in JSON and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in tree.json -inf json -out tree.pickle -outf pickle
+  python taxonomy-resolver.py build -in tree.json -inf json -out tree.pickle -outf pickle
 
 
 Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf taxids_filter.txt
+  python taxonomy-resolver.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf taxids_filter.txt
 
 
 Generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs passed to search
@@ -215,14 +215,14 @@ a filtered Tree in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py search -in tree_filtered.pickle -inf pickle -taxids taxids_search.txt -taxidf taxids_filter.txt -out taxids_list.txt
+  python taxonomy-resolver.py search -in tree_filtered.pickle -inf pickle -taxids taxids_search.txt -taxidf taxids_filter.txt -out taxids_list.txt
 
 
 Validating a list of TaxIDs against a full (or filtered) Tree in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy_resolver_cli.py validate -in tree.pickle -inf pickle -taxids taxids_search.txt
+  python taxonomy-resolver.py validate -in tree.pickle -inf pickle -taxids taxids_search.txt
 
 
 Bug Tracking
