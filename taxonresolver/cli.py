@@ -45,12 +45,12 @@ def cli():
     pass
 
 
-@click.command("download")
-@add_common(common_options)
+@cli.command("download")
 @click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
               multiple=False, help="Path to output Tax dump file.")
-@click.option('-outf', '--outformat', 'outformat', type=str, default="json", required=True,
+@click.option('-outf', '--outformat', 'outformat', type=str, default="zip", required=False,
               multiple=False, help="Output format (currently: 'zip' or 'tar.gz').")
+@add_common(common_options)
 def download(outfile: str, outformat: str,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Download the NCBI Taxonomy dump file."""
@@ -59,15 +59,14 @@ def download(outfile: str, outformat: str,
 
     # input options validation
     validate_inputs_outputs(outputfile=outfile)
-    logging.info("Validated inputs and outputs.")
+    logging.info("Validated output.")
 
     resolver = TaxonResolver(logging)
     resolver.download(outfile, outformat)
     logging.info("Downloaded NCBI Taxonomy Dump from FTP.")
 
 
-@click.command("build")
-@add_common(common_options)
+@cli.command("build")
 @click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
               multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
                                     "(currently: 'json' or 'pickle')."))
@@ -79,6 +78,7 @@ def download(outfile: str, outformat: str,
               multiple=False, help="Output format (currently: 'json' or 'pickle').")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
+@add_common(common_options)
 def build(infile: str, outfile: str, informat: str, outformat: str, taxidfilter: str,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Build NCBI Taxonomy Tree in JSON or Pickle."""
@@ -107,8 +107,7 @@ def build(infile: str, outfile: str, informat: str, outformat: str, taxidfilter:
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
 
 
-@click.command("search")
-@add_common(common_options)
+@cli.command("search")
 @click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
               multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
                                     "(currently: 'json' or 'pickle')."))
@@ -120,6 +119,7 @@ def build(infile: str, outfile: str, informat: str, outformat: str, taxidfilter:
               multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
+@add_common(common_options)
 def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilter: str,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Searches a NCBI Taxonomy Tree and writes a list of TaxIDs."""
