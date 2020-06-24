@@ -41,7 +41,7 @@ common_options = [
 @click.group(chain=True, context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(version=__version__)
 def cli():
-    """Taxonomy Resolver: Build NCBI Taxonomy JSON Tree."""
+    """Taxonomy Resolver: Build NCBI Taxonomy Trees and lists of TaxIDs."""
     pass
 
 

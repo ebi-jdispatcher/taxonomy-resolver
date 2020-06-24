@@ -192,45 +192,55 @@ def filter_tree(tree_dict: dict, inputfile: str,
     return taxon_nodes
 
 
-def search_tree(tree_dict: dict, tax_id: str, inputfile: str,
-                sep: str = " ", indx: int = 1) -> list:
+def search_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
+                sep: str = " ", indx: int = 1, node: str = "1") -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
         searches all children in the list that compose that node.
 
     :param tree_dict: dict of anytree node objects
-    :param tax_id: TaxID to search with
+    :param taxidfile: Path to file with TaxIDs to search with
     :param inputfile: Path to inputfile, which is a list of
         Taxonomy Identifiers (optional)
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
+    :param node: node label/name
     :return: list of TaxIDs
     """
 
-    tax_ids = []
+    taxids_search = []
+    with open(taxidfile, "r") as infile:
+        for line in infile:
+            tax_id = line.rstrip()
+            taxids_search.append(tax_id)
+
+    taxids_filter = []
     if inputfile:
         with open(inputfile, "r") as infile:
             for line in infile:
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
-                tax_ids.append(tax_id)
+                taxids_filter.append(tax_id)
 
-    if tax_id in tax_ids:
-        return [tax_id]
-    else:
-        nodes = findall_by_attr(tree_dict["1"], tax_id)
-        children = [str(node.path[-1]).split("'")[1].split("/")[-1] for node in nodes]
-        return [tax_id for tax_id in children if tax_id in tax_ids]
+    taxids_found = []
+    for tax_id in taxids_search:
+        if tax_id in taxids_filter:
+            taxids_found.append(tax_id)
+        else:
+            nodes = findall_by_attr(tree_dict[node], tax_id)
+            children = [str(node.path[-1]).split("'")[1].split("/")[-1] for node in nodes]
+            taxids_found.extend([tax_id for tax_id in children if tax_id in taxids_filter])
+    return list(set(taxids_found))
 
 
-def validate_tree(tree_dict: dict, tax_id: str, inputfile: str or None,
+def validate_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
                   sep: str = " ", indx: int = 1) -> bool:
     """
     Simply checks if TaxID is in the list or in the Tree.
 
     :param tree_dict: dict of anytree node objects
-    :param tax_id: TaxID to search with
+    :param taxidfile: Path to file with TaxIDs to search with
     :param inputfile: Path to inputfile, which is a list of
         Taxonomy Identifiers
     :param sep: separator for splitting the input file lines
@@ -238,18 +248,27 @@ def validate_tree(tree_dict: dict, tax_id: str, inputfile: str or None,
     :return: boolean
     """
 
-    tax_ids = []
+    taxids_search = []
+    with open(taxidfile, "r") as infile:
+        for line in infile:
+            tax_id = line.rstrip()
+            taxids_search.append(tax_id)
+
+    taxids_filter = []
     if inputfile:
         with open(inputfile, "r") as infile:
             for line in infile:
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
-                tax_ids.append(tax_id)
+                taxids_filter.append(tax_id)
 
-    if tax_id in tax_ids or tax_id in tree_dict:
-        return True
-    else:
-        return False
+    taxids_valid = []
+    for tax_id in taxids_search:
+        if tax_id in taxids_filter or tax_id in tree_dict:
+            taxids_valid.append(True)
+        else:
+            taxids_valid.append(False)
+    return False if False in taxids_valid else True
 
 
 class TaxonResolver(object):
@@ -262,7 +281,8 @@ class TaxonResolver(object):
         self._valid_formats = ("json", "pickle")
 
     def download(self, outputfile, outputformat):
-        """Download NCBI Taxonomy dump file"""
+        """Download NCBI Taxonomy dump file."""
+        outputformat = outputformat.lower()
         download_taxonomy_dump(outputfile, outputformat)
 
     def build(self, inputfile):
@@ -271,6 +291,7 @@ class TaxonResolver(object):
 
     def load(self, inputfile, inputformat):
         """Load a tree from JSON or Pickle files."""
+        inputformat = inputformat.lower()
         if inputformat in self._valid_formats:
             self.tree = load_tree(inputfile, inputformat, **self.kwargs)
         else:
@@ -279,6 +300,7 @@ class TaxonResolver(object):
 
     def write(self, outputfile, outputformat, node="root"):
         """Write a tree in JSON or Pickle formats."""
+        outputformat = outputformat.lower()
         if outputformat in self._valid_formats:
             self.node = node
             if self.node == "root":
@@ -303,7 +325,7 @@ class TaxonResolver(object):
         self.tree = filter_tree(self.tree, taxidfilter)
 
     def search(self, taxidsearch, taxidfilter):
-        """Search a Tree based on a taxid and a list of TaxIds"""
+        """Search a Tree based on a list of TaxIds."""
         return search_tree(self.tree, taxidsearch, taxidfilter)
 
     def validate(self, taxidsearch, taxidfilter):
