@@ -9,7 +9,6 @@ NCBI Taxonomy Resolver
 """
 
 import io
-import json
 import copy
 import pickle
 import zipfile
@@ -20,6 +19,7 @@ from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
 from anytree.search import findall_by_attr
+from anytree.iterators import LevelOrderIter
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
@@ -34,8 +34,8 @@ def get_node_from_dict(node: dict) -> Node:
     Given a node dictionary and a label string, return an anytree Node
     representing this tax_id.
 
-    :param node: (defaultdict) node dictionary
-    :return: anyTree Node object
+    :param node: node dict
+    :return: anytree Node object
     """
     return Node(node["tax_id"],
                 rank=node["rank"],
@@ -43,17 +43,17 @@ def get_node_from_dict(node: dict) -> Node:
                 parentTaxId=node["parent_tax_id"])
 
 
-def build_tree(inputfile: str, logging: logging = None) -> dict:
+def build_tree(inputfile: str, logging: logging or None = None) -> dict:
     """
     Given the path to the taxdmp.zip file, build a full tree,
     by converting nodes to anytree nodes.
 
     :param inputfile: Path to taxdmp.zip file
-    :param logging: logging obj
+    :param logging: logging obj or None
     :return: dict of anytree Node objects
     """
 
-    taxon_nodes = defaultdict(list)
+    taxon_nodes = {}
     scientific_names = defaultdict(list)
     labels = {}
 
@@ -98,27 +98,30 @@ def build_tree(inputfile: str, logging: logging = None) -> dict:
 
         # any unrecognised ranks?
         for rank in list(set(unrec_ranks)):
-            logging.debug(f"WARN Unrecognized rank '{rank}'")
+            if logging:
+                logging.debug(f"WARN Unrecognized rank '{rank}'")
 
-        logging.info("Building tree. This may take a few minutes...")
+        # logging.info("Building tree. This may take a few minutes...")
         # If we knew the input file was ordered, we could speed this up massively
         # Loop over has keys and build a tree by reparenting
         for anytree_node in taxon_nodes.values():
             if (anytree_node.parentTaxId and
                     anytree_node.parentTaxId != "" and
                     anytree_node.parentTaxId == anytree_node.name):
-                logging.debug(f"Found root for {anytree_node.name}")
+                if logging:
+                    logging.debug(f"Found root for {anytree_node.name}")
             else:
                 parent = anytree_node.parentTaxId
                 if parent in taxon_nodes:
                     anytree_node.parent = taxon_nodes[parent]
                 else:
-                    logging.debug(f"No parent found for {anytree_node.name}")
+                    if logging:
+                        logging.debug(f"No parent found for {anytree_node.name}")
 
     return taxon_nodes
 
 
-def load_tree(inputfile: str, inputformat: str = "json", **kwargs):
+def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> dict:
     """
     Loads pre-existing Tree from file.
 
@@ -132,7 +135,8 @@ def load_tree(inputfile: str, inputformat: str = "json", **kwargs):
     elif inputformat == "json":
         importer = JsonImporter(**kwargs)
         with open(inputfile) as data:
-            return importer.import_(json.load(data))
+            return {node.name: node for node in
+                    LevelOrderIter(importer.read(data))}
 
 
 def write_tree(tree_dict: dict, node: str,
@@ -149,15 +153,15 @@ def write_tree(tree_dict: dict, node: str,
 
     if outputformat == "pickle":
         with open(outputfile, 'wb') as outfile:
-            pickle.dump(tree_dict[node], outfile)
+            pickle.dump(tree_dict, outfile)
     elif outputformat == "json":
-        exporter = JsonExporter(indent=2, **kwargs)
+        exporter = JsonExporter(**kwargs)
         with open(outputfile, "w") as outfile:
-            print(exporter.write(tree_dict[node], outfile))
+            exporter.write(tree_dict[node], outfile)
 
 
 def filter_tree(tree_dict: dict, inputfile: str,
-                sep: str = " ", indx: int = 1) -> dict:
+                sep: str = " ", indx: int = 0) -> dict:
     """
     Filters an existing Tree based on a List of TaxIDs file.
 
@@ -168,7 +172,7 @@ def filter_tree(tree_dict: dict, inputfile: str,
     :param indx: index used for splicing the the resulting list
     :return: dict of anytree node objects
     """
-    taxon_nodes = defaultdict(list)
+    taxon_nodes = {}
     tax_ids = []
     with open(inputfile, "r") as infile:
         for line in infile:
