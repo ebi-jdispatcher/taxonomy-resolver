@@ -72,14 +72,14 @@ def download(outfile: str, outformat: str,
                                     "(currently: 'json' or 'pickle')."))
 @click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
               multiple=False, help="Path to output file.")
-@click.option('-inf', '--informat', 'informat', type=str, default="json", required=True,
+@click.option('-inf', '--informat', 'informat', type=str, default=None, required=False,
               multiple=False, help="Input format (currently: 'json' or 'pickle').")
 @click.option('-outf', '--outformat', 'outformat', type=str, default="json", required=True,
               multiple=False, help="Output format (currently: 'json' or 'pickle').")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def build(infile: str, outfile: str, informat: str, outformat: str, taxidfilter: str,
+def build(infile: str, outfile: str, informat: str or None, outformat: str, taxidfilter: str,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Build NCBI Taxonomy Tree in JSON or Pickle."""
 
@@ -96,6 +96,8 @@ def build(infile: str, outfile: str, informat: str, outformat: str, taxidfilter:
         resolver.load(infile, informat)
         logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
     else:
+        logging.info(f"Building NCBI Taxonomy from {infile}. "
+                     f"This can take several minutes to complete...")
         resolver.build(infile)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
 
