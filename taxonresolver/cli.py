@@ -122,7 +122,7 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str, taxi
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilter: str,
+def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilter: str = None,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Searches a NCBI Taxonomy Tree and writes a list of TaxIDs."""
 
@@ -157,7 +157,7 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilt
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str,
+def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = None,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Validates a list of TaxIDs against a NCBI Taxonomy Tree."""
 

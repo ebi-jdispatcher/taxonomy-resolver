@@ -18,8 +18,8 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
+from anytree.search import findall
 from anytree.search import findall_by_attr
-from anytree.iterators import LevelOrderIter
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
@@ -29,28 +29,56 @@ from taxonresolver.library import ncbi_ranks
 from taxonresolver.library import ncbi_node_fields
 
 
-def get_node_from_dict(node: dict) -> Node:
+def get_node_from_dict(node: dict,
+                       named_keys: tuple = ("tax_id", "rank", "label", "parent_tax_id")) -> Node:
     """
     Given a node dictionary and a label string, return an anytree Node
     representing this tax_id.
 
     :param node: node dict
+    :param named_keys: keys to use to create the node
     :return: anytree Node object
     """
-    return Node(node["tax_id"],
-                rank=node["rank"],
-                taxonName=node["label"],
-                parentTaxId=node["parent_tax_id"])
+    return Node(node[named_keys[0]],
+                rank=node[named_keys[1]],
+                taxonName=node[named_keys[2]],
+                parentTaxId=node[named_keys[3]])
 
 
-def build_tree(inputfile: str, logging: logging or None = None) -> dict:
+def tree_reparenting(tree_dict: dict, logging: logging or None = None) -> Node:
+    """
+    Loops over the Tree dictionary and reparents every node
+
+    :param tree_dict: dict of anytree node objects
+    :param logging: logging obj
+    :return: anytree Node object
+    """
+
+    # If we knew the input file was ordered, we could speed this up massively
+    # Loop over has keys and build a tree by re-parenting
+    def getRONode(tree_dict, tax_id):
+        parent_id = tree_dict[tax_id].parentTaxId
+        if parent_id in tree_dict:
+            if parent_id != tax_id:
+                tree_dict[tax_id].parent = tree_dict[parent_id]
+                getRONode(tree_dict, parent_id)
+            else:
+                if logging:
+                    logging.debug(f"Found root for {anytree_node.name}")
+
+    for anytree_node in tree_dict.values():
+        getRONode(tree_dict, anytree_node.name)
+    return tree_dict["1"]
+
+
+def build_tree(inputfile: str, logging: logging or None = None) -> Node:
     """
     Given the path to the taxdmp.zip file, build a full tree,
     by converting nodes to anytree nodes.
 
     :param inputfile: Path to taxdmp.zip file
     :param logging: logging obj or None
-    :return: dict of anytree Node objects
+    :return: anytree Node object
     """
 
     taxon_nodes = {}
@@ -72,7 +100,8 @@ def build_tree(inputfile: str, logging: logging or None = None) -> dict:
             if len(tax_ids) > 1:
                 uniques = [x[1] for x in values]
                 if len(tax_ids) != len(set(uniques)):
-                    logging.info("Duplicate unique names", tax_ids, uniques)
+                    if logging:
+                        logging.info("Duplicate unique names", tax_ids, uniques)
                 for tax_id, unique in values:
                     labels[tax_id] = unique
 
@@ -101,27 +130,12 @@ def build_tree(inputfile: str, logging: logging or None = None) -> dict:
             if logging:
                 logging.debug(f"WARN Unrecognized rank '{rank}'")
 
-        # logging.info("Building tree. This may take a few minutes...")
-        # If we knew the input file was ordered, we could speed this up massively
-        # Loop over has keys and build a tree by reparenting
-        for anytree_node in taxon_nodes.values():
-            if (anytree_node.parentTaxId and
-                    anytree_node.parentTaxId != "" and
-                    anytree_node.parentTaxId == anytree_node.name):
-                if logging:
-                    logging.debug(f"Found root for {anytree_node.name}")
-            else:
-                parent = anytree_node.parentTaxId
-                if parent in taxon_nodes:
-                    anytree_node.parent = taxon_nodes[parent]
-                else:
-                    if logging:
-                        logging.debug(f"No parent found for {anytree_node.name}")
-
-    return taxon_nodes
+        # tree re-parenting
+        root = tree_reparenting(taxon_nodes)
+    return root
 
 
-def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> dict:
+def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> Node:
     """
     Loads pre-existing Tree from file.
 
@@ -135,17 +149,17 @@ def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> dict:
     elif inputformat == "json":
         importer = JsonImporter(**kwargs)
         with open(inputfile) as data:
-            return {node.name: node for node in
-                    LevelOrderIter(importer.read(data))}
+            taxon_nodes = {node.name: node for node in
+                           findall(importer.read(data))}
+            # tree re-parenting
+            return tree_reparenting(taxon_nodes)
 
 
-def write_tree(tree_dict: dict, node: str,
-               outputfile: str, outputformat: str, **kwargs):
+def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
     """
     Writes Tree to file.
 
-    :param tree_dict: dict of anytree node objects
-    :param node: node label/name
+    :param tree: anytree Node object
     :param outputfile: Path to outputfile
     :param outputformat: "json" or "pickle"
     :return: (side-effects) writes to file
@@ -153,97 +167,106 @@ def write_tree(tree_dict: dict, node: str,
 
     if outputformat == "pickle":
         with open(outputfile, 'wb') as outfile:
-            pickle.dump(tree_dict, outfile)
+            pickle.dump(tree, outfile)
     elif outputformat == "json":
         exporter = JsonExporter(**kwargs)
         with open(outputfile, "w") as outfile:
-            exporter.write(tree_dict[node], outfile)
+            exporter.write(tree, outfile)
 
 
-def filter_tree(tree_dict: dict, inputfile: str,
-                sep: str = " ", indx: int = 0) -> dict:
+def filter_tree(tree: Node, filterfile: str,
+                sep: str = " ", indx: int = 0) -> Node:
     """
     Filters an existing Tree based on a List of TaxIDs file.
 
-    :param tree_dict: dict of anytree node objects
-    :param inputfile: Path to inputfile, which is a list of
+    :param tree: anytree Node object
+    :param filterfile: Path to inputfile, which is a list of
         Taxonomy Identifiers
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
-    :return: dict of anytree node objects
+    :return: anytree Node object
     """
     taxon_nodes = {}
     tax_ids = []
-    with open(inputfile, "r") as infile:
+    with open(filterfile, "r") as infile:
         for line in infile:
+            if line.startswith("#"):
+                continue
             line = line.rstrip()
             tax_id = line.split(sep)[indx]
             tax_ids.append(tax_id)
 
     # get list of all required (and unique) tax_id parents
     tax_id_parents = []
-    for anytree_node in tree_dict.values():
-        if anytree_node.name in tax_ids:
-            # get full path and use it to capture all
-            # levels in the hierarchy that are required
-            for tax_id in str(anytree_node.path[-1]).split("'")[1].split("/")[1:]:
-                tax_id_parents.append(tax_id)
+    for tax_id in tax_ids:
+        # get full path and use it to capture all
+        # levels in the hierarchy that are required
+        node = findall_by_attr(tree, tax_id)
+        for tax_id in str(node).split("'")[1].split("/")[1:]:
+            tax_id_parents.append(tax_id)
 
     tax_id_parents = list(set(tax_id_parents))
-    for tax_id in tax_id_parents:
-        taxon_nodes[tax_id] = tree_dict[tax_id]
+    keys = ('name', 'rank', 'taxonName', 'parentTaxId')
+    for node in findall(tree, filter_=lambda n: n.name in tax_id_parents):
+        anytree_node = get_node_from_dict({k: v for k, v in node.__dict__.items() if k in keys},
+                                          named_keys=keys)
+        taxon_nodes[node.name] = anytree_node
 
-    return taxon_nodes
+    # tree re-parenting
+    root = tree_reparenting(taxon_nodes)
+    return root
 
 
-def search_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
-                sep: str = " ", indx: int = 1, node: str = "1") -> list:
+def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
+                sep: str = " ", indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
         searches all children in the list that compose that node.
 
-    :param tree_dict: dict of anytree node objects
+    :param tree: anytree Node object
     :param taxidfile: Path to file with TaxIDs to search with
-    :param inputfile: Path to inputfile, which is a list of
+    :param filterfile: Path to inputfile, which is a list of
         Taxonomy Identifiers (optional)
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
-    :param node: node label/name
     :return: list of TaxIDs
     """
 
     taxids_search = []
     with open(taxidfile, "r") as infile:
         for line in infile:
+            if line.startswith("#"):
+                continue
             tax_id = line.rstrip()
             taxids_search.append(tax_id)
 
     taxids_filter = []
-    if inputfile:
-        with open(inputfile, "r") as infile:
+    if filterfile:
+        with open(filterfile, "r") as infile:
             for line in infile:
+                if line.startswith("#"):
+                    continue
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
                 taxids_filter.append(tax_id)
 
-    taxids_found = []
-    for tax_id in taxids_search:
-        if tax_id in taxids_filter:
-            taxids_found.append(tax_id)
-        else:
-            nodes = findall_by_attr(tree_dict[node], tax_id)
-            children = [str(node.path[-1]).split("'")[1].split("/")[-1] for node in nodes]
-            taxids_found.extend([tax_id for tax_id in children if tax_id in taxids_filter])
+    taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
+    allsps = findall(tree, filter_=lambda n: n.rank == "species")
+    allsps_paths = [str(node.path[-1]).split("'")[1] for node in allsps]
+    for node in findall(tree, filter_=lambda n: n.name in taxids_search):
+        for sppath in allsps_paths:
+            if node.name in sppath:
+                taxids_found.extend(sppath.split("/")[-1])
     return list(set(taxids_found))
 
 
-def validate_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
-                  sep: str = " ", indx: int = 1) -> bool:
+def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
+                  sep: str = " ", indx: int = 0) -> bool:
     """
     Simply checks if TaxID is in the list or in the Tree.
 
-    :param tree_dict: dict of anytree node objects
+    :param tree: anytree Node object
     :param taxidfile: Path to file with TaxIDs to search with
     :param inputfile: Path to inputfile, which is a list of
         Taxonomy Identifiers
@@ -255,6 +278,8 @@ def validate_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
     taxids_search = []
     with open(taxidfile, "r") as infile:
         for line in infile:
+            if line.startswith("#"):
+                continue
             tax_id = line.rstrip()
             taxids_search.append(tax_id)
 
@@ -262,13 +287,16 @@ def validate_tree(tree_dict: dict, taxidfile: str, inputfile: str or None,
     if inputfile:
         with open(inputfile, "r") as infile:
             for line in infile:
+                if line.startswith("#"):
+                    continue
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
                 taxids_filter.append(tax_id)
 
     taxids_valid = []
     for tax_id in taxids_search:
-        if tax_id in taxids_filter or tax_id in tree_dict:
+        if (tax_id in taxids_filter or
+                tax_id in [node.name for node in findall_by_attr(tree, tax_id)]):
             taxids_valid.append(True)
         else:
             taxids_valid.append(False)
@@ -279,7 +307,6 @@ class TaxonResolver(object):
     def __init__(self, logging=None, **kwargs):
         self.tree = None
         self._full_tree = None
-        self.node = "root"
         self.logging = logging
         self.kwargs = kwargs
         self._valid_formats = ("json", "pickle")
@@ -302,15 +329,11 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Input format '{inputformat}' is not valid!")
 
-    def write(self, outputfile, outputformat, node="root"):
+    def write(self, outputfile, outputformat):
         """Write a tree in JSON or Pickle formats."""
         outputformat = outputformat.lower()
         if outputformat in self._valid_formats:
-            self.node = node
-            if self.node == "root":
-                self.node = "1"
-            write_tree(self.tree, self.node,
-                       outputfile, outputformat, **self.kwargs)
+            write_tree(self.tree, outputfile, outputformat, **self.kwargs)
         else:
             if self.logging:
                 self.logging(f"Output format '{outputformat}' is not valid!")
@@ -328,10 +351,10 @@ class TaxonResolver(object):
                 print(message)
         self.tree = filter_tree(self.tree, taxidfilter)
 
-    def search(self, taxidsearch, taxidfilter):
+    def search(self, taxidsearch, taxidfilter=None):
         """Search a Tree based on a list of TaxIds."""
         return search_tree(self.tree, taxidsearch, taxidfilter)
 
-    def validate(self, taxidsearch, taxidfilter):
+    def validate(self, taxidsearch, taxidfilter=None):
         """Validate a list of TaxIDs agains a Tree."""
         return validate_tree(self.tree, taxidsearch, taxidfilter)
