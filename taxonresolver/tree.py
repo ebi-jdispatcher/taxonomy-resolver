@@ -45,6 +45,25 @@ def get_node_from_dict(node: dict,
                 parentTaxId=node[named_keys[3]])
 
 
+def get_anytree_taxon_nodes(tree, filter_=None):
+    """
+    Creates a dict of nodes on the fly that is then used for reparenting.
+
+    :param tree: anytree Node object
+    :param filter_: function called with every `node` as argument,
+        `node` is returned if `True`.
+    :return: dict of anytree objects
+    """
+
+    taxon_nodes = {}
+    keys = ('name', 'rank', 'taxonName', 'parentTaxId')
+    for node in findall(tree, filter_=filter_):
+        anytree_node = get_node_from_dict({k: v for k, v in node.__dict__.items() if k in keys},
+                                          named_keys=keys)
+        taxon_nodes[node.name] = anytree_node
+    return taxon_nodes
+
+
 def tree_reparenting(tree_dict: dict, logging: logging or None = None) -> Node:
     """
     Loops over the Tree dictionary and reparents every node
@@ -149,8 +168,7 @@ def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> Node:
     elif inputformat == "json":
         importer = JsonImporter(**kwargs)
         with open(inputfile) as data:
-            taxon_nodes = {node.name: node for node in
-                           findall(importer.read(data))}
+            taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
             # tree re-parenting
             return tree_reparenting(taxon_nodes)
 
@@ -186,7 +204,7 @@ def filter_tree(tree: Node, filterfile: str,
     :param indx: index used for splicing the the resulting list
     :return: anytree Node object
     """
-    taxon_nodes = {}
+
     tax_ids = []
     with open(filterfile, "r") as infile:
         for line in infile:
@@ -206,12 +224,7 @@ def filter_tree(tree: Node, filterfile: str,
             tax_id_parents.append(tax_id)
 
     tax_id_parents = list(set(tax_id_parents))
-    keys = ('name', 'rank', 'taxonName', 'parentTaxId')
-    for node in findall(tree, filter_=lambda n: n.name in tax_id_parents):
-        anytree_node = get_node_from_dict({k: v for k, v in node.__dict__.items() if k in keys},
-                                          named_keys=keys)
-        taxon_nodes[node.name] = anytree_node
-
+    taxon_nodes = get_anytree_taxon_nodes(tree, filter_=lambda n: n.name in tax_id_parents)
     # tree re-parenting
     root = tree_reparenting(taxon_nodes)
     return root
