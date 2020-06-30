@@ -161,12 +161,13 @@ including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's 
 CLI
 ---
 
-Examples below are provided running the CLI. Explore the CLI and each command by running
-``python taxonomy_resolver.py (COMMAND) --help`` :
+Explore the CLI and each command by running
+``python taxonomy_resolver.py (COMMAND) --help``. If Taxonomy Resolver was installed with
+``python setup.py install``, then simply run ``taxonomy_resolver --help``:
 
 .. code-block:: bash
 
-  Usage: taxonomy_resolver.py [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
+  Usage: taxonomy_resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
                               [ARGS]...]...
 
     Taxonomy Resolver: Build NCBI Taxonomy Trees and lists of TaxIDs.
