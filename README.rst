@@ -130,6 +130,7 @@ including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's 
 .. code-block:: python
 
   from taxonresolver import TaxonResolver
+  from anytree.search import find_by_attr, findall_by_attr
 
   resolver = TaxonResolver()
 
@@ -142,23 +143,19 @@ including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's 
 
   # Display the path of particular node
   # ( "9606" is the TaxID of species 'homo sapiens')
-  tree["9606"]
+  find_by_attr(tree, "9606")
   # Node('/1/131567/(...)/9606', parentTaxId='9605', rank='species', taxonName='Homo sapiens')
   # Display the parent node
-  tree["9606"].parent
+  find_by_attr(tree, "9606").parent
   # Node('/1/131567/(...)/9605', parentTaxId='207598', rank='genus', taxonName='Homo')
-
-  # Search for Nodes that match a particular TaxID
-  from anytree.search import find_by_attr
-  # (searching on the full Tree based on the TaxID "1", which is the root)
   # ( "40674" is the TaxID of class 'Mammalia')
-  find_by_attr(tree["1"], "40674")
+  find_by_attr(tree, "40674")
   # Node('/1/131567/.../40674', parentTaxId='32524', rank='class', taxonName='Mammalia')
 
   # Iterate over all Nodes that compose a particular TaxID
   from anytree.iterators import LevelOrderIter
   # ( "9443" is the TaxID of order 'Primates')
-  [node.name for node in LevelOrderIter(tree["9443"]) if node.rank == "species"]
+  [node.name for node in LevelOrderIter(findall_by_attr(tree, "9443")) if node.rank == "species"]
   # [..., ..., ...]
 
 CLI
