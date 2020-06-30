@@ -235,6 +235,12 @@ If you find any bugs or issues please log them in the `issue tracker`_.
 Changelog
 =========
 
+**0.0.2**
+
+- Added wrapper class and methods to work with the Taxonomy Resolver
+- Added functions to build a Tree and converting it to `anytree`_ Tree (with re-parenting)
+- Added command-line interface (CLI) with sub-commands for common functions
+
 **0.0.1**
 
 - Started development

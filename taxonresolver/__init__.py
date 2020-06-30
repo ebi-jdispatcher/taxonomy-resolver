@@ -10,7 +10,7 @@ NCBI Taxonomy Resolver
 
 __author__ = 'Fábio Madeira'
 __email__ = 'fmadeira@ebi.ac.uk'
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __contributors__ = [u'Fábio Madeira', u'Adrian Tivey']
 
 from taxonresolver.tree import TaxonResolver
