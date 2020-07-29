@@ -170,7 +170,8 @@ def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> Node:
         with open(inputfile) as data:
             taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
             # tree re-parenting
-            return tree_reparenting(taxon_nodes)
+            root = tree_reparenting(taxon_nodes)
+            return root
 
 
 def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
@@ -309,7 +310,7 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
     taxids_valid = []
     for tax_id in taxids_search:
         if (tax_id in taxids_filter or
-                tax_id in [node.name for node in findall_by_attr(tree, tax_id)]):
+                tax_id in [node.name for node in findall(tree)]):
             taxids_valid.append(True)
         else:
             taxids_valid.append(False)

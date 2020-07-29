@@ -31,7 +31,6 @@ def cwd():
 class TestTree:
     def test_resolver_build(self, context, cwd):
         resolver = TaxonResolver(logging=context)
-        print(os.getcwd())
         resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
         nodes = findall(resolver.tree)
         assert len(nodes) == 12086

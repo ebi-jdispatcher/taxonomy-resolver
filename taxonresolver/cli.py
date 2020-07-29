@@ -140,10 +140,15 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilt
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
-    tax_ids = resolver.search(taxidsearch, taxidfilter)
-    with open(outfile, "w") as outfile:
-        outfile.write("\n".join(tax_ids))
-    logging.info(f"Wrote list of TaxIDS in {outfile}.")
+    if resolver.validate(taxidsearch, taxidfilter):
+        logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
+
+        tax_ids = resolver.search(taxidsearch, taxidfilter)
+        with open(outfile, "w") as outfile:
+            outfile.write("\n".join(tax_ids))
+        logging.info(f"Wrote list of TaxIDS in {outfile}.")
+    else:
+        print(f"Invalid TaxIDs provided for search.")
 
 
 @cli.command("validate")
@@ -176,6 +181,7 @@ def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = No
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
     valid = resolver.validate(taxidsearch, taxidfilter)
+    logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
     print(valid)
     logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
 
