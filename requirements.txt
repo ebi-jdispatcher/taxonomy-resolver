@@ -2,3 +2,4 @@ click
 anytree
 requests
 pytest
+fastcache

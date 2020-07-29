@@ -18,8 +18,8 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
-from anytree.search import findall
-from anytree.search import findall_by_attr
+from anytree.cachedsearch import findall
+from anytree.cachedsearch import findall_by_attr
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal

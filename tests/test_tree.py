@@ -10,7 +10,7 @@ NCBI Taxonomy Resolver
 
 import os
 import pytest
-from anytree.search import findall, find_by_attr
+from anytree.cachedsearch import findall, find_by_attr
 from anytree.iterators import PreOrderIter, LevelOrderIter
 from taxonresolver import TaxonResolver
 from taxonresolver.utils import load_logging
