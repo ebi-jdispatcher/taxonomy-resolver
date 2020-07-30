@@ -213,7 +213,8 @@ def filter_tree(tree: Node, filterfile: str,
                 continue
             line = line.rstrip()
             tax_id = line.split(sep)[indx]
-            tax_ids.append(tax_id)
+            if tax_id != "":
+                tax_ids.append(tax_id)
 
     # get list of all required (and unique) tax_id parents
     tax_id_parents = []
@@ -253,7 +254,8 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
             if line.startswith("#"):
                 continue
             tax_id = line.rstrip()
-            taxids_search.append(tax_id)
+            if tax_id != "":
+                taxids_search.append(tax_id)
 
     taxids_filter = []
     if filterfile:
@@ -263,7 +265,8 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
                     continue
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
-                taxids_filter.append(tax_id)
+                if tax_id != "":
+                    taxids_filter.append(tax_id)
 
     taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
     allsps = findall(tree, filter_=lambda n: n.rank == "species")
