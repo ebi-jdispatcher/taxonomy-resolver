@@ -235,6 +235,13 @@ If you find any bugs or issues please log them in the `issue tracker`_.
 Changelog
 =========
 
+**0.0.3**
+
+- Improved filtering and searching functions
+- Searching performs validation to prevent searching exceptions/errors
+- Added search/validate 'by taxid' methods
+- Added cached search as an option
+
 **0.0.2**
 
 - Added wrapper class and methods to work with the Taxonomy Resolver
