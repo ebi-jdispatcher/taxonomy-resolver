@@ -18,8 +18,8 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
+from anytree.cachedsearch import find
 from anytree.cachedsearch import findall
-from anytree.cachedsearch import findall_by_attr
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
@@ -213,15 +213,8 @@ def filter_tree(tree: Node, filterfile: str,
     tax_ids = parse_tax_ids(filterfile, sep, indx)
 
     # get list of all required (and unique) tax_id parents
-    tax_id_parents = []
-    for tax_id in tax_ids:
-        # get full path and use it to capture all
-        # levels in the hierarchy that are required
-        node = findall_by_attr(tree, tax_id)
-        for tax_id in str(node).split("'")[1].split("/")[1:]:
-            tax_id_parents.append(tax_id)
-
-    tax_id_parents = list(set(tax_id_parents))
+    tax_id_parents = [node.name for tax_id in tax_ids
+                      for node in find(tree, filter_=lambda n: n.name == tax_id).path]
     taxon_nodes = get_anytree_taxon_nodes(tree, filter_=lambda n: n.name in tax_id_parents)
     return tree_reparenting(taxon_nodes, root_key)
 
