@@ -305,7 +305,8 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
             if line.startswith("#"):
                 continue
             tax_id = line.rstrip()
-            taxids_search.append(tax_id)
+            if tax_id != "":
+                taxids_search.append(tax_id)
 
     taxids_filter = []
     if inputfile:
@@ -315,7 +316,8 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
                     continue
                 line = line.rstrip()
                 tax_id = line.split(sep)[indx]
-                taxids_filter.append(tax_id)
+                if tax_id != "":
+                    taxids_filter.append(tax_id)
 
     taxids_valid = []
     for tax_id in taxids_search:
@@ -381,5 +383,5 @@ class TaxonResolver(object):
         return search_tree(self.tree, taxidsearch, taxidfilter)
 
     def validate(self, taxidsearch, taxidfilter=None):
-        """Validate a list of TaxIDs agains a Tree."""
+        """Validate a list of TaxIDs against a Tree."""
         return validate_tree(self.tree, taxidsearch, taxidfilter)

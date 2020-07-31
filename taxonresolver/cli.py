@@ -183,7 +183,6 @@ def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = No
     valid = resolver.validate(taxidsearch, taxidfilter)
     logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
     print(valid)
-    logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
 
 
 if __name__ == '__main__':
