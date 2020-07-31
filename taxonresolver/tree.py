@@ -241,12 +241,9 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
         taxids_filter = parse_tax_ids(filterfile, sep, indx)
 
     taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
-    allsps = findall(tree, filter_=lambda n: n.rank == "species")
-    allsps_paths = [str(node.path[-1]).split("'")[1] for node in allsps]
-    for node in findall(tree, filter_=lambda n: n.name in taxids_search):
-        for sppath in allsps_paths:
-            if node.name in sppath:
-                taxids_found.extend(sppath.split("/")[-1])
+    taxids_found.extend([node for tax_id in taxids_search
+                         for node in find(tree, filter_=lambda n: n.name == tax_id).leaves
+                         if node.rank == "species"])
     return list(set(taxids_found))
 
 
