@@ -332,6 +332,14 @@ class TaxonResolver(object):
         """Search a Tree based on a list of TaxIds."""
         return search_tree(self.tree, taxidsearch, taxidfilter)
 
+    def search_by_taxid(self, taxid) -> Node:
+        """Retrieve a node by its unique TaxID"""
+        return find(self.tree, filter_=lambda node: node.name == taxid)
+
     def validate(self, taxidsearch, taxidfilter=None):
         """Validate a list of TaxIDs against a Tree."""
         return validate_tree(self.tree, taxidsearch, taxidfilter)
+
+    def validate_by_taxid(self, taxid):
+        """Validate a TaxIDs against a Tree."""
+        return True if find(self.tree, filter_=lambda node: node.name == taxid) else False

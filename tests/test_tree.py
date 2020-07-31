@@ -161,3 +161,22 @@ class TestTree:
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
         assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"),
                                      os.path.join(cwd, "../testdata/taxids_filter.txt"))
+
+    def test_search_by_taxid(self,  context, cwd):
+        resolver = TaxonResolver(logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
+        human = resolver.search_by_taxid("9606")
+        assert human.rank == "species"
+        assert human.parent.rank == "genus"
+        assert human.parent.taxonName == "Homo"
+        assert human.parent.parent.rank == "subfamily"
+        assert human.parent.parent.taxonName == "Homininae"
+
+    def test_validate_by_taxid(self,  context, cwd):
+        resolver = TaxonResolver(logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
+        assert resolver.validate_by_taxid("9606")
+        with pytest.raises(AssertionError):
+            assert resolver.validate_by_taxid("000")
