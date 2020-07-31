@@ -10,7 +10,13 @@ before_script:
 stages:
   # Unit tests
   - test_pytest
+  # Install Module
+  - setup_install
 
 test_pytest:
   stage: test_pytest
   script: pytest
+
+setup_install:
+  stage: setup_install
+  script: python setup.py install
