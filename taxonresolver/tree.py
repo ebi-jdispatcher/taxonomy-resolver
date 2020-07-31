@@ -154,9 +154,7 @@ def build_tree(inputfile: str, root_key: str = "1",
             if logging:
                 logging.debug(f"WARN Unrecognized rank '{rank}'")
 
-        # tree re-parenting
-        root = tree_reparenting(taxon_nodes, root_key)
-    return root
+    return tree_reparenting(taxon_nodes, root_key)
 
 
 def load_tree(inputfile: str, inputformat: str = "json",
@@ -176,9 +174,7 @@ def load_tree(inputfile: str, inputformat: str = "json",
         importer = JsonImporter(**kwargs)
         with open(inputfile) as data:
             taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
-            # tree re-parenting
-            root = tree_reparenting(taxon_nodes, root_key)
-            return root
+            return tree_reparenting(taxon_nodes, root_key)
 
 
 def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
@@ -227,9 +223,7 @@ def filter_tree(tree: Node, filterfile: str,
 
     tax_id_parents = list(set(tax_id_parents))
     taxon_nodes = get_anytree_taxon_nodes(tree, filter_=lambda n: n.name in tax_id_parents)
-    # tree re-parenting
-    root = tree_reparenting(taxon_nodes, root_key)
-    return root
+    return tree_reparenting(taxon_nodes, root_key)
 
 
 def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
