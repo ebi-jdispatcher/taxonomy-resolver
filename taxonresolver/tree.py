@@ -18,8 +18,13 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
-from anytree.cachedsearch import find
-from anytree.cachedsearch import findall
+try:
+    import fastcache
+    from anytree.cachedsearch import find
+    from anytree.cachedsearch import findall
+except ModuleNotFoundError:
+    from anytree.search import find
+    from anytree.search import findall
 
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal

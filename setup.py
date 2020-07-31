@@ -37,6 +37,10 @@ setup(
     install_requires=DEPENDENCIES,
     test_requires=['pytest', 'python_version>"3.7"'],
 
+    extras_require={
+        'fastcache': ['fastcache>=1.1.0']
+    },
+
     # Tests.
     test_suite='tests',
 

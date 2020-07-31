@@ -1,5 +1,7 @@
+# required
 click
 anytree
 requests
 pytest
-fastcache
+# optional
+#fastcache
