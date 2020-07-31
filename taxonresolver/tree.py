@@ -247,6 +247,17 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     return list(set(taxids_found))
 
 
+def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree: anytree Node object
+    :param tax_id: TaxID
+    :return: anytree Node object
+    """
+    return find(tree, filter_=lambda node: node.name == tax_id)
+
+
 def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
                   sep: str = " ", indx: int = 0) -> bool:
     """
@@ -274,6 +285,17 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
         else:
             taxids_valid.append(False)
     return False if False in taxids_valid else True
+
+
+def validate_tree_by_taxid(tree: Node, tax_id: str) -> bool:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree: anytree Node object
+    :param tax_id: TaxID
+    :return: boolean
+    """
+    return True if find(tree, filter_=lambda node: node.name == tax_id) else False
 
 
 class TaxonResolver(object):
@@ -325,18 +347,34 @@ class TaxonResolver(object):
                 print(message)
         self.tree = filter_tree(self.tree, taxidfilter, root_key=self.root_key)
 
-    def search(self, taxidsearch, taxidfilter=None):
-        """Search a Tree based on a list of TaxIds."""
-        return search_tree(self.tree, taxidsearch, taxidfilter)
-
-    def search_by_taxid(self, taxid) -> Node:
-        """Retrieve a node by its unique TaxID"""
-        return find(self.tree, filter_=lambda node: node.name == taxid)
-
-    def validate(self, taxidsearch, taxidfilter=None):
+    def validate(self, taxidsearch, taxidfilter=None) -> bool:
         """Validate a list of TaxIDs against a Tree."""
         return validate_tree(self.tree, taxidsearch, taxidfilter)
 
-    def validate_by_taxid(self, taxid):
+    def validate_by_taxid(self, taxid) -> bool:
         """Validate a TaxIDs against a Tree."""
-        return True if find(self.tree, filter_=lambda node: node.name == taxid) else False
+        return validate_tree_by_taxid(self.tree, taxid)
+
+    def search(self, taxidsearch, taxidfilter=None) -> list or None:
+        """Search a Tree based on a list of TaxIds."""
+        if validate_tree(self.tree, taxidsearch, taxidfilter):
+            return search_tree(self.tree, taxidsearch, taxidfilter)
+        else:
+            message = ("Some of the provided TaxIDs are not valid or not found "
+                       "in the built Tree.")
+            if self.logging:
+                logging.warning(message)
+            else:
+                print(message)
+
+    def search_by_taxid(self, taxid) -> Node or None:
+        """Retrieve a node by its unique TaxID."""
+        if validate_tree_by_taxid(self.tree, taxid):
+            return search_tree_by_taxid(self.tree, taxid)
+        else:
+            message = ("The provided TaxIDs is not valid or not found "
+                       "in the built Tree.")
+            if self.logging:
+                logging.warning(message)
+            else:
+                print(message)
