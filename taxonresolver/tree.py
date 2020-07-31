@@ -64,11 +64,13 @@ def get_anytree_taxon_nodes(tree, filter_=None):
     return taxon_nodes
 
 
-def tree_reparenting(tree_dict: dict, logging: logging or None = None) -> Node:
+def tree_reparenting(tree_dict: dict, root_key: str = "1",
+                     logging: logging or None = None) -> Node:
     """
     Loops over the Tree dictionary and reparents every node
 
     :param tree_dict: dict of anytree node objects
+    :param root_key: Key of the root Node
     :param logging: logging obj
     :return: anytree Node object
     """
@@ -87,15 +89,17 @@ def tree_reparenting(tree_dict: dict, logging: logging or None = None) -> Node:
 
     for anytree_node in tree_dict.values():
         getRONode(tree_dict, anytree_node.name)
-    return tree_dict["1"]
+    return tree_dict[root_key]
 
 
-def build_tree(inputfile: str, logging: logging or None = None) -> Node:
+def build_tree(inputfile: str, root_key: str = "1",
+               logging: logging or None = None) -> Node:
     """
     Given the path to the taxdmp.zip file, build a full tree,
     by converting nodes to anytree nodes.
 
     :param inputfile: Path to taxdmp.zip file
+    :param root_key: Key of the root Node
     :param logging: logging obj or None
     :return: anytree Node object
     """
@@ -150,16 +154,18 @@ def build_tree(inputfile: str, logging: logging or None = None) -> Node:
                 logging.debug(f"WARN Unrecognized rank '{rank}'")
 
         # tree re-parenting
-        root = tree_reparenting(taxon_nodes)
+        root = tree_reparenting(taxon_nodes, root_key)
     return root
 
 
-def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> Node:
+def load_tree(inputfile: str, inputformat: str = "json",
+              root_key: str = "1", **kwargs) -> Node:
     """
     Loads pre-existing Tree from file.
 
     :param inputfile: Path to outputfile
     :param inputformat: "json" or "pickle"
+    :param root_key: Key of the root Node
     :return: dict of anytree node objects
     """
 
@@ -170,7 +176,7 @@ def load_tree(inputfile: str, inputformat: str = "json", **kwargs) -> Node:
         with open(inputfile) as data:
             taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
             # tree re-parenting
-            root = tree_reparenting(taxon_nodes)
+            root = tree_reparenting(taxon_nodes, root_key)
             return root
 
 
@@ -194,7 +200,7 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
 
 
 def filter_tree(tree: Node, filterfile: str,
-                sep: str = " ", indx: int = 0) -> Node:
+                sep: str = " ", indx: int = 0, root_key: str = "1") -> Node:
     """
     Filters an existing Tree based on a List of TaxIDs file.
 
@@ -203,6 +209,7 @@ def filter_tree(tree: Node, filterfile: str,
         Taxonomy Identifiers
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
+    :param root_key: Key of the root Node
     :return: anytree Node object
     """
 
@@ -228,7 +235,7 @@ def filter_tree(tree: Node, filterfile: str,
     tax_id_parents = list(set(tax_id_parents))
     taxon_nodes = get_anytree_taxon_nodes(tree, filter_=lambda n: n.name in tax_id_parents)
     # tree re-parenting
-    root = tree_reparenting(taxon_nodes)
+    root = tree_reparenting(taxon_nodes, root_key)
     return root
 
 
@@ -322,6 +329,7 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
 
 class TaxonResolver(object):
     def __init__(self, logging=None, **kwargs):
+        self.root_key = "1"
         self.tree = None
         self._full_tree = None
         self.logging = logging
@@ -335,13 +343,13 @@ class TaxonResolver(object):
 
     def build(self, inputfile):
         """Build a tree from NCBI dump file."""
-        self.tree = build_tree(inputfile, self.logging)
+        self.tree = build_tree(inputfile, self.root_key, self.logging)
 
     def load(self, inputfile, inputformat):
         """Load a tree from JSON or Pickle files."""
         inputformat = inputformat.lower()
         if inputformat in self._valid_formats:
-            self.tree = load_tree(inputfile, inputformat, **self.kwargs)
+            self.tree = load_tree(inputfile, inputformat, self.root_key, **self.kwargs)
         else:
             if self.logging:
                 self.logging(f"Input format '{inputformat}' is not valid!")
@@ -366,7 +374,7 @@ class TaxonResolver(object):
                 logging.warning(message)
             else:
                 print(message)
-        self.tree = filter_tree(self.tree, taxidfilter)
+        self.tree = filter_tree(self.tree, taxidfilter, root_key=self.root_key)
 
     def search(self, taxidsearch, taxidfilter=None):
         """Search a Tree based on a list of TaxIds."""
