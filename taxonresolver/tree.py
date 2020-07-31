@@ -25,6 +25,7 @@ from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
 from taxonresolver.utils import split_line
 from taxonresolver.utils import download_taxonomy_dump
+from taxonresolver.utils import parse_tax_ids
 from taxonresolver.library import ncbi_ranks
 from taxonresolver.library import ncbi_node_fields
 
@@ -213,15 +214,7 @@ def filter_tree(tree: Node, filterfile: str,
     :return: anytree Node object
     """
 
-    tax_ids = []
-    with open(filterfile, "r") as infile:
-        for line in infile:
-            if line.startswith("#"):
-                continue
-            line = line.rstrip()
-            tax_id = line.split(sep)[indx]
-            if tax_id != "":
-                tax_ids.append(tax_id)
+    tax_ids = parse_tax_ids(filterfile, sep, indx)
 
     # get list of all required (and unique) tax_id parents
     tax_id_parents = []
@@ -255,25 +248,10 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     :return: list of TaxIDs
     """
 
-    taxids_search = []
-    with open(taxidfile, "r") as infile:
-        for line in infile:
-            if line.startswith("#"):
-                continue
-            tax_id = line.rstrip()
-            if tax_id != "":
-                taxids_search.append(tax_id)
-
+    taxids_search = parse_tax_ids(taxidfile, sep, indx)
     taxids_filter = []
     if filterfile:
-        with open(filterfile, "r") as infile:
-            for line in infile:
-                if line.startswith("#"):
-                    continue
-                line = line.rstrip()
-                tax_id = line.split(sep)[indx]
-                if tax_id != "":
-                    taxids_filter.append(tax_id)
+        taxids_filter = parse_tax_ids(filterfile, sep, indx)
 
     taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
     allsps = findall(tree, filter_=lambda n: n.rank == "species")
@@ -299,25 +277,10 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
     :return: boolean
     """
 
-    taxids_search = []
-    with open(taxidfile, "r") as infile:
-        for line in infile:
-            if line.startswith("#"):
-                continue
-            tax_id = line.rstrip()
-            if tax_id != "":
-                taxids_search.append(tax_id)
-
+    taxids_search = parse_tax_ids(taxidfile, sep, indx)
     taxids_filter = []
     if inputfile:
-        with open(inputfile, "r") as infile:
-            for line in infile:
-                if line.startswith("#"):
-                    continue
-                line = line.rstrip()
-                tax_id = line.split(sep)[indx]
-                if tax_id != "":
-                    taxids_filter.append(tax_id)
+        taxids_filter = parse_tax_ids(inputfile, sep, indx)
 
     taxids_valid = []
     for tax_id in taxids_search:

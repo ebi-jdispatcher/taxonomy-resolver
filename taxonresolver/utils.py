@@ -100,3 +100,26 @@ def label_to_id(text):
 def split_line(line):
     """Split a line from a dmp file"""
     return [x.strip() for x in line.split("	|")]
+
+
+def parse_tax_ids(inputfile: str, sep: str = " ", indx: int = 0) -> list:
+    """
+    Parses a list of TaxIDs from an input file.
+    It skips lines started with '#'.
+
+    :param inputfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: list of TaxIDs
+    """
+    tax_ids = []
+    with open(inputfile, "r") as infile:
+        for line in infile:
+            if line.startswith("#"):
+                continue
+            line = line.rstrip()
+            tax_id = line.split(sep)[indx]
+            if tax_id != "":
+                tax_ids.append(tax_id)
+    return tax_ids
