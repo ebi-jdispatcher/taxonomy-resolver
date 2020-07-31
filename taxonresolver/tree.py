@@ -52,7 +52,7 @@ def get_node_from_dict(node: dict,
                 parentTaxId=node[named_keys[3]])
 
 
-def get_anytree_taxon_nodes(tree, filter_=None):
+def get_anytree_taxon_nodes(tree, filter_=None) -> dict:
     """
     Creates a dict of nodes on the fly that is then used for reparenting.
 
@@ -313,16 +313,16 @@ class TaxonResolver(object):
         self.kwargs = kwargs
         self._valid_formats = ("json", "pickle")
 
-    def download(self, outputfile, outputformat):
+    def download(self, outputfile, outputformat) -> None:
         """Download NCBI Taxonomy dump file."""
         outputformat = outputformat.lower()
         download_taxonomy_dump(outputfile, outputformat)
 
-    def build(self, inputfile):
+    def build(self, inputfile) -> None:
         """Build a tree from NCBI dump file."""
         self.tree = build_tree(inputfile, self.root_key, self.logging)
 
-    def load(self, inputfile, inputformat):
+    def load(self, inputfile, inputformat) -> None:
         """Load a tree from JSON or Pickle files."""
         inputformat = inputformat.lower()
         if inputformat in self._valid_formats:
@@ -331,7 +331,7 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Input format '{inputformat}' is not valid!")
 
-    def write(self, outputfile, outputformat):
+    def write(self, outputfile, outputformat) -> None:
         """Write a tree in JSON or Pickle formats."""
         outputformat = outputformat.lower()
         if outputformat in self._valid_formats:
@@ -340,7 +340,7 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Output format '{outputformat}' is not valid!")
 
-    def filter(self, taxidfilter):
+    def filter(self, taxidfilter) -> None:
         """Re-build a tree ignoring Taxonomy IDs provided."""
         # keep a copy of the original (full) tree
         self._full_tree = copy.copy(self.tree)

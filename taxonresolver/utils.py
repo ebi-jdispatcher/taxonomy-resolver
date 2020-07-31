@@ -14,7 +14,7 @@ import requests
 import logging
 
 
-def get_logging_level(level: str = 'INFO'):
+def get_logging_level(level: str = 'INFO') -> logging:
     if level == 'DEBUG':
         return logging.DEBUG
     elif level == 'INFO':
@@ -29,7 +29,7 @@ def get_logging_level(level: str = 'INFO'):
         return logging.INFO
 
 
-def load_logging(log_level: str, log_output: str = None, disabled: bool = False):
+def load_logging(log_level: str, log_output: str = None, disabled: bool = False) -> logging:
     logging.basicConfig(format='%(asctime)s - [%(levelname)s] %(message)s',
                         level=get_logging_level(log_level),
                         datefmt='%d/%m/%Y %H:%M:%S')
@@ -69,7 +69,7 @@ def validate_inputs_outputs(inputfile: str or None = None,
             print_and_exit(f"Output file '{outputfile}' cannot be opened or created!")
 
 
-def download_taxonomy_dump(outfile, extension="zip"):
+def download_taxonomy_dump(outfile, extension="zip") -> None:
     """
     Download Taxonomy Dump file from NCBI Taxonomy FTP server.
 
@@ -89,15 +89,15 @@ def download_taxonomy_dump(outfile, extension="zip"):
         print(f"Unable to Download Taxonomy Dump from {url}")
 
 
-def escape_literal(text):
+def escape_literal(text) -> str:
     return text.replace('"', '\\"')
 
 
-def label_to_id(text):
+def label_to_id(text) -> str:
     return text.replace(" ", "_").replace("-", "_")
 
 
-def split_line(line):
+def split_line(line) -> list:
     """Split a line from a dmp file"""
     return [x.strip() for x in line.split("	|")]
 
