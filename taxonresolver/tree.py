@@ -31,6 +31,7 @@ from taxonresolver.utils import escape_literal
 from taxonresolver.utils import split_line
 from taxonresolver.utils import download_taxonomy_dump
 from taxonresolver.utils import parse_tax_ids
+from taxonresolver.utils import print_and_exit
 from taxonresolver.library import ncbi_ranks
 from taxonresolver.library import ncbi_node_fields
 
@@ -349,7 +350,7 @@ class TaxonResolver(object):
             if self.logging:
                 logging.warning(message)
             else:
-                print(message)
+                print_and_exit(message)
         self.tree = filter_tree(self.tree, taxidfilter, root_key=self.root_key)
 
     def validate(self, taxidsearch, taxidfilter=None) -> bool:
@@ -370,7 +371,7 @@ class TaxonResolver(object):
             if self.logging:
                 logging.warning(message)
             else:
-                print(message)
+                print_and_exit(message)
 
     def search_by_taxid(self, taxid) -> Node or None:
         """Retrieve a node by its unique TaxID."""
@@ -382,4 +383,4 @@ class TaxonResolver(object):
             if self.logging:
                 logging.warning(message)
             else:
-                print(message)
+                print_and_exit(message)

@@ -14,6 +14,7 @@ from taxonresolver import __version__
 
 from taxonresolver.tree import TaxonResolver
 from taxonresolver.utils import load_logging
+from taxonresolver.utils import print_and_exit
 from taxonresolver.utils import validate_inputs_outputs
 
 
@@ -177,7 +178,7 @@ def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = No
 
     valid = resolver.validate(taxidsearch, taxidfilter)
     logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
-    print(valid)
+    print_and_exit(valid)
 
 
 if __name__ == '__main__':

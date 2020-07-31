@@ -24,7 +24,7 @@ Main features of Taxonomy Resolver are:
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.6+ (recommended version 3.8). Additional requirements, which will be
+Installation requires `Python`_ 3.7+ (recommended version 3.8). Additional requirements, which will be
 downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
@@ -265,4 +265,3 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _anytree: https://github.com/c0fec0de/anytree
 .. _anytree's documentation: https://anytree.readthedocs.io/
-
