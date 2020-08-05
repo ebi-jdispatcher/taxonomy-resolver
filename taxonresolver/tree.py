@@ -247,7 +247,7 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
         taxids_filter = parse_tax_ids(filterfile, sep, indx)
 
     taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
-    taxids_found.extend([node for tax_id in taxids_search
+    taxids_found.extend([node.name for tax_id in taxids_search
                          for node in find(tree, filter_=lambda n: n.name == tax_id).leaves
                          if node.rank == "species"])
     return list(set(taxids_found))
