@@ -99,6 +99,22 @@ def tree_reparenting(tree_dict: dict, root_key: str = "1",
     return tree_dict[root_key]
 
 
+def tree_reparenting_fast(tree_dict: dict) -> dict:
+    """
+    Loops over the Tree dictionary and reparents every node
+
+    :param tree_dict: dict of anytree node objects
+    :return: updated dict object
+    """
+    for k, v in tree_dict["nodes"].items():
+        if k != "parents":
+            if v["parent_tax_id"] not in tree_dict["parents"]:
+                tree_dict["parents"][v["parent_tax_id"]] = []
+            else:
+                tree_dict["parents"][v["parent_tax_id"]].append(v["tax_id"])
+    return tree_dict
+
+
 def build_tree(inputfile: str, root_key: str = "1",
                logging: logging or None = None) -> Node:
     """
@@ -165,6 +181,28 @@ def build_tree(inputfile: str, root_key: str = "1",
 
 def load_tree(inputfile: str, inputformat: str = "json",
               root_key: str = "1", **kwargs) -> Node:
+def build_tree_fast(inputfile: str) -> dict:
+    """
+    Given the path to the taxdmp.zip file, build a full tree,
+    by converting nodes to anytree nodes.
+
+    :param inputfile: Path to taxdmp.zip file
+    :return: dict object
+    """
+
+    tree_dict = {"nodes": {}, "parents": {}}
+    with zipfile.ZipFile(inputfile) as taxdmp:
+        # read nodes
+        with taxdmp.open("nodes.dmp") as dmp:
+            for line in io.TextIOWrapper(dmp):
+                dict_node = {}
+                fields = split_line(line)
+                dict_node["tax_id"] = fields[0]
+                dict_node["parent_tax_id"] = fields[1]
+                tree_dict["nodes"][fields[0]] = dict_node
+    return tree_reparenting_fast(tree_dict)
+
+
     """
     Loads pre-existing Tree from file.
 
@@ -253,6 +291,43 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     return list(set(taxids_found))
 
 
+def search_tree_fast(tree: dict, taxidfile: str, filterfile: str or None = None,
+                     sep: str = " ", indx: int = 0) -> list:
+    """
+    Searches an existing Tree and produces a list of TaxIDs.
+    Checks if TaxID is in the list, if so provides as is, else,
+        searches all children in the list that compose that node.
+
+    :param tree: dict object
+    :param taxidfile: Path to file with TaxIDs to search with
+    :param filterfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers (optional)
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: list of TaxIDs
+    """
+
+    taxids_search = parse_tax_ids(taxidfile, sep, indx)
+    taxids_filter = []
+    if filterfile:
+        taxids_filter = parse_tax_ids(filterfile, sep, indx)
+
+    taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
+    for tax_id in taxids_search:
+        # list of children
+        def get_leaves(taxids: list, tree: dict):
+            taxids_found.extend(taxids)
+            for taxid in taxids:
+                try:
+                    get_leaves(tree["parents"][taxid], tree)
+                except KeyError:
+                    # taxid is a leaf node - i.e. it is not a parent of any other TaxID
+                    pass
+        get_leaves(tree["parents"][tax_id], tree)
+
+    return list(set(taxids_found))
+
+
 def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
     """
     Simply checks if TaxID is in the list or in the Tree.
@@ -262,6 +337,17 @@ def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
     :return: anytree Node object
     """
     return find(tree, filter_=lambda node: node.name == tax_id)
+
+
+def search_tree_by_taxid_fast(tree: dict, tax_id: str) -> Node:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree: anytree Node object
+    :param tax_id: TaxID
+    :return: dict object
+    """
+    return tree["nodes"][tax_id]
 
 
 def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
@@ -293,6 +379,34 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
     return False if False in taxids_valid else True
 
 
+def validate_tree_fast(tree: dict, taxidfile: str, inputfile: str or None = None,
+                       sep: str = " ", indx: int = 0) -> bool:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree: dict object
+    :param taxidfile: Path to file with TaxIDs to search with
+    :param inputfile: Path to inputfile, which is a list of
+        Taxonomy Identifiers
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: boolean
+    """
+
+    taxids_search = parse_tax_ids(taxidfile, sep, indx)
+    taxids_filter = []
+    if inputfile:
+        taxids_filter = parse_tax_ids(inputfile, sep, indx)
+
+    taxids_valid = []
+    for tax_id in taxids_search:
+        if tax_id in taxids_filter or tax_id in tree["nodes"]:
+            taxids_valid.append(True)
+        else:
+            taxids_valid.append(False)
+    return False if False in taxids_valid else True
+
+
 def validate_tree_by_taxid(tree: Node, tax_id: str) -> bool:
     """
     Simply checks if TaxID is in the list or in the Tree.
@@ -302,6 +416,17 @@ def validate_tree_by_taxid(tree: Node, tax_id: str) -> bool:
     :return: boolean
     """
     return True if find(tree, filter_=lambda node: node.name == tax_id) else False
+
+
+def validate_tree_by_taxid_fast(tree: dict, tax_id: str) -> bool:
+    """
+    Simply checks if TaxID is in the list or in the Tree.
+
+    :param tree: dict object
+    :param tax_id: TaxID
+    :return: boolean
+    """
+    return tax_id in tree["nodes"]
 
 
 class TaxonResolver(object):
