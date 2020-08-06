@@ -19,6 +19,7 @@ from collections import defaultdict
 from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
+
 try:
     import fastcache
     from anytree.cachedsearch import find
@@ -108,11 +109,11 @@ def tree_reparenting_fast(tree_dict: dict) -> dict:
     :return: updated dict object
     """
     for k, v in tree_dict["nodes"].items():
-        if k != "parents":
-            if v["parent_tax_id"] not in tree_dict["parents"]:
-                tree_dict["parents"][v["parent_tax_id"]] = []
-            else:
-                tree_dict["parents"][v["parent_tax_id"]].append(v["tax_id"])
+        if v["parent_tax_id"] not in tree_dict["parents"]:
+            tree_dict["parents"][v["parent_tax_id"]] = [v["tax_id"]]
+        else:
+            tree_dict["parents"][v["parent_tax_id"]].append(v["tax_id"])
+
     return tree_dict
 
 
@@ -198,6 +199,7 @@ def build_tree_fast(inputfile: str) -> dict:
                 fields = split_line(line)
                 dict_node["tax_id"] = fields[0]
                 dict_node["parent_tax_id"] = fields[1]
+                dict_node["rank"] = label_to_id(fields[2])
                 tree_dict["nodes"][fields[0]] = dict_node
     return tree_reparenting_fast(tree_dict)
 
@@ -335,6 +337,7 @@ def search_tree_fast(tree: dict, taxidfile: str, filterfile: str or None = None,
                 except KeyError:
                     # taxid is a leaf node - i.e. it is not a parent of any other TaxID
                     pass
+
         get_leaves(tree["parents"][tax_id], tree)
 
     return list(set(taxids_found))
