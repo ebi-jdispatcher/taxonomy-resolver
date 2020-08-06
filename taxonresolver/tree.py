@@ -278,7 +278,7 @@ def filter_tree(tree: Node, filterfile: str,
 
 
 def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
-                sep: str = " ", indx: int = 0) -> list:
+                search_rank: str = "species", sep: str = " ", indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
@@ -288,6 +288,7 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     :param taxidfile: Path to file with TaxIDs to search with
     :param filterfile: Path to inputfile, which is a list of
         Taxonomy Identifiers (optional)
+    :param search_rank: Rank used for searching TaxIDs
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: list of TaxIDs
@@ -301,12 +302,12 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
     taxids_found.extend([node.name for tax_id in taxids_search
                          for node in find(tree, filter_=lambda n: n.name == tax_id).leaves
-                         if node.rank == "species"])
+                         if node.rank == search_rank])
     return list(set(taxids_found))
 
 
 def search_tree_fast(tree: dict, taxidfile: str, filterfile: str or None = None,
-                     sep: str = " ", indx: int = 0) -> list:
+                     search_rank: str = "species", sep: str = " ", indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
@@ -316,6 +317,7 @@ def search_tree_fast(tree: dict, taxidfile: str, filterfile: str or None = None,
     :param taxidfile: Path to file with TaxIDs to search with
     :param filterfile: Path to inputfile, which is a list of
         Taxonomy Identifiers (optional)
+    :param search_rank: Rank used for searching TaxIDs
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: list of TaxIDs
@@ -330,7 +332,8 @@ def search_tree_fast(tree: dict, taxidfile: str, filterfile: str or None = None,
     for tax_id in taxids_search:
         # list of children
         def get_leaves(taxids: list, tree: dict):
-            taxids_found.extend(taxids)
+            taxids_found.extend([t for t in taxids
+                                 if tree["nodes"][t]["rank"] == search_rank])
             for taxid in taxids:
                 try:
                     get_leaves(tree["parents"][taxid], tree)
@@ -454,6 +457,7 @@ class TaxonResolver(object):
         self.mode = mode
         self._valid_formats = ("json", "pickle")
         self._valid_modes = ("anytree", "fast")
+        self.search_rank = "species"
 
     def download(self, outputfile, outputformat) -> None:
         """Download NCBI Taxonomy dump file."""
@@ -526,7 +530,8 @@ class TaxonResolver(object):
                    "in the built Tree.")
         if self.mode == "anytree":
             if validate_tree(self.tree, taxidsearch, taxidfilter):
-                return search_tree(self.tree, taxidsearch, taxidfilter)
+                return search_tree(self.tree, taxidsearch, taxidfilter,
+                                   self.search_rank)
             else:
                 if self.logging:
                     logging.warning(message)
@@ -534,7 +539,8 @@ class TaxonResolver(object):
                     print_and_exit(message)
         elif self.mode == "fast":
             if validate_tree_fast(self.tree, taxidsearch, taxidfilter):
-                return search_tree_fast(self.tree, taxidsearch, taxidfilter)
+                return search_tree_fast(self.tree, taxidsearch, taxidfilter,
+                                        self.search_rank)
             else:
                 if self.logging:
                     logging.warning(message)
