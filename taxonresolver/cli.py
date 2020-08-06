@@ -29,6 +29,8 @@ def add_common(options: list):
 
 
 common_options = [
+    click.option('-mode', '--mode', 'mode', type=str, required=False, default="anytree",
+                 multiple=False, help="Usage mode (currently 'anytree' or 'fast')."),
     click.option('-level', '--log_level', 'log_level', type=str, default='INFO',
                  multiple=False, help="Log level to use. Expects: 'DEBUG', 'INFO',"
                                       " 'WARN', 'ERROR', and 'CRITICAL'."),
@@ -80,7 +82,8 @@ def download(outfile: str, outformat: str,
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def build(infile: str, outfile: str, informat: str or None, outformat: str, taxidfilter: str,
+def build(infile: str, outfile: str, informat: str or None, outformat: str,
+          taxidfilter: str, mode: str = "anytree",
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Build NCBI Taxonomy Tree in JSON or Pickle."""
 
@@ -92,7 +95,7 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str, taxi
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs and outputs.")
 
-    resolver = TaxonResolver(logging)
+    resolver = TaxonResolver(mode, logging)
     if informat:
         resolver.load(infile, informat)
         logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
@@ -123,7 +126,8 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str, taxi
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilter: str = None,
+def search(infile: str, outfile: str, informat: str, taxidsearch: str,
+           taxidfilter: str = None, mode: str = "anytree",
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Searches a NCBI Taxonomy Tree and writes a list of TaxIDs."""
 
@@ -136,7 +140,7 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilt
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs and outputs.")
 
-    resolver = TaxonResolver(logging)
+    resolver = TaxonResolver(mode, logging)
 
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
@@ -158,7 +162,8 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str, taxidfilt
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
-def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = None,
+def validate(infile: str, informat: str, taxidsearch: str,
+             taxidfilter: str = None, mode: str = "anytree",
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Validates a list of TaxIDs against a NCBI Taxonomy Tree."""
 
@@ -171,14 +176,14 @@ def validate(infile: str, informat: str, taxidsearch: str, taxidfilter: str = No
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs.")
 
-    resolver = TaxonResolver(logging)
+    resolver = TaxonResolver(mode, logging)
 
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
     valid = resolver.validate(taxidsearch, taxidfilter)
     logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
-    print_and_exit(valid)
+    print_and_exit(str(valid))
 
 
 if __name__ == '__main__':
