@@ -50,6 +50,12 @@ class TestTree:
         assert human.parent.taxonName == "Homo"
         assert human.parent.parent.rank == "subfamily"
         assert human.parent.parent.taxonName == "Homininae"
+        human = resolver.search_by_taxid("9606")
+        assert human.rank == "species"
+        assert human.parent.rank == "genus"
+        assert human.parent.taxonName == "Homo"
+        assert human.parent.parent.rank == "subfamily"
+        assert human.parent.parent.taxonName == "Homininae"
 
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -181,6 +187,87 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
+        assert resolver.validate_by_taxid("9606")
+        with pytest.raises(AssertionError):
+            assert resolver.validate_by_taxid("000")
+
+    def test_resolver_build_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 12099
+        human = resolver.search_by_taxid("9606")
+        assert human["parent_tax_id"] == "9605"
+        assert human["rank"] == "species"
+
+    def test_resolver_build_and_write_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
+        resolver.write(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast.pickle"))
+        resolver.write(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast.json"))
+
+    def test_resolver_load_pickle_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 12099
+
+    def test_resolver_load_json_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 12099
+
+    def test_resolver_write_and_load_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        resolver.write(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast.json"))
+
+        resolver = TaxonResolver(mode="fast", logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 12099
+        human = resolver.search_by_taxid("9606")
+        assert human["parent_tax_id"] == "9605"
+        assert human["rank"] == "species"
+
+    def test_resolver_search_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"),
+                                  os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert len(tax_ids) == 302
+
+    def test_resolver_validate_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        assert resolver.validate(os.path.join(cwd, "../testdata/taxids_validate.txt"),
+                                 os.path.join(cwd, "../testdata/taxids_filter.txt"))
+
+    def test_resolver_validate_alt_fast(self, context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"),
+                                     os.path.join(cwd, "../testdata/taxids_filter.txt"))
+
+    def test_search_by_taxid_fast(self,  context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        human = resolver.search_by_taxid("9606")
+        assert human["parent_tax_id"] == "9605"
+        assert human["rank"] == "species"
+
+    def test_validate_by_taxid_fast(self,  context, cwd):
+        resolver = TaxonResolver(mode="fast", logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
         assert resolver.validate_by_taxid("9606")
         with pytest.raises(AssertionError):
             assert resolver.validate_by_taxid("000")
