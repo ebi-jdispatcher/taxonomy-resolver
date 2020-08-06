@@ -226,7 +226,7 @@ def load_tree(inputfile: str, inputformat: str = "pickle",
                 return tree_reparenting(taxon_nodes, root_key)
         elif mode == "fast":
             with open(inputfile) as data:
-                return json.load(data)
+                return json.load(data, **kwargs)
 
 
 def write_tree(tree: Node, outputfile: str, outputformat: str,
@@ -251,20 +251,20 @@ def write_tree(tree: Node, outputfile: str, outputformat: str,
                 exporter.write(tree, outfile)
         elif mode == "fast":
             with open(outputfile, 'w') as outfile:
-                json.dump(tree, outfile)
+                json.dump(tree, outfile, **kwargs)
 
 
-def filter_tree(tree: Node, filterfile: str,
-                sep: str = " ", indx: int = 0, root_key: str = "1") -> Node:
+def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
+                sep: str = " ", indx: int = 0) -> Node:
     """
     Filters an existing Tree based on a List of TaxIDs file.
 
     :param tree: anytree Node object
     :param filterfile: Path to inputfile, which is a list of
         Taxonomy Identifiers
+    :param root_key: Key of the root Node
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
-    :param root_key: Key of the root Node
     :return: anytree Node object
     """
 
@@ -508,14 +508,14 @@ class TaxonResolver(object):
                 logging.warning(message)
             else:
                 print_and_exit(message)
-        self.tree = filter_tree(self.tree, taxidfilter, root_key=self.root_key)
+        self.tree = filter_tree(self.tree, taxidfilter, self.root_key)
 
-    def validate(self, taxidsearch, taxidfilter=None) -> bool:
+    def validate(self, taxidsearch, taxidfilter=None, **kwargs) -> bool:
         """Validate a list of TaxIDs against a Tree."""
         if self.mode == "anytree":
-            return validate_tree(self.tree, taxidsearch, taxidfilter)
+            return validate_tree(self.tree, taxidsearch, taxidfilter, **kwargs)
         elif self.mode == "fast":
-            return validate_tree_fast(self.tree, taxidsearch, taxidfilter)
+            return validate_tree_fast(self.tree, taxidsearch, taxidfilter, **kwargs)
 
     def validate_by_taxid(self, taxid) -> bool:
         """Validate a TaxIDs against a Tree."""
@@ -524,14 +524,14 @@ class TaxonResolver(object):
         elif self.mode == "fast":
             return validate_tree_by_taxid_fast(self.tree, taxid)
 
-    def search(self, taxidsearch, taxidfilter=None) -> list or None:
+    def search(self, taxidsearch, taxidfilter=None, **kwargs) -> list or None:
         """Search a Tree based on a list of TaxIds."""
         message = ("Some of the provided TaxIDs are not valid or not found "
                    "in the built Tree.")
         if self.mode == "anytree":
             if validate_tree(self.tree, taxidsearch, taxidfilter):
                 return search_tree(self.tree, taxidsearch, taxidfilter,
-                                   self.search_rank)
+                                   self.search_rank, **kwargs)
             else:
                 if self.logging:
                     logging.warning(message)
@@ -540,7 +540,7 @@ class TaxonResolver(object):
         elif self.mode == "fast":
             if validate_tree_fast(self.tree, taxidsearch, taxidfilter):
                 return search_tree_fast(self.tree, taxidsearch, taxidfilter,
-                                        self.search_rank)
+                                        self.search_rank, **kwargs)
             else:
                 if self.logging:
                     logging.warning(message)
