@@ -9,6 +9,7 @@ NCBI Taxonomy Resolver
 """
 
 import io
+import json
 import copy
 import pickle
 import zipfile
@@ -179,8 +180,6 @@ def build_tree(inputfile: str, root_key: str = "1",
     return tree_reparenting(taxon_nodes, root_key)
 
 
-def load_tree(inputfile: str, inputformat: str = "json",
-              root_key: str = "1", **kwargs) -> Node:
 def build_tree_fast(inputfile: str) -> dict:
     """
     Given the path to the taxdmp.zip file, build a full tree,
@@ -203,11 +202,14 @@ def build_tree_fast(inputfile: str) -> dict:
     return tree_reparenting_fast(tree_dict)
 
 
+def load_tree(inputfile: str, inputformat: str = "pickle",
+              mode: str = "anytree", root_key: str = "1", **kwargs) -> Node:
     """
     Loads pre-existing Tree from file.
 
     :param inputfile: Path to outputfile
     :param inputformat: "json" or "pickle"
+    :param mode: "anytree" or "fast"
     :param root_key: Key of the root Node
     :return: dict of anytree node objects
     """
@@ -215,29 +217,39 @@ def build_tree_fast(inputfile: str) -> dict:
     if inputformat == "pickle":
         return pickle.load(open(inputfile, "rb"))
     elif inputformat == "json":
-        importer = JsonImporter(**kwargs)
-        with open(inputfile) as data:
-            taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
-            return tree_reparenting(taxon_nodes, root_key)
+        if mode == "anytree":
+            importer = JsonImporter(**kwargs)
+            with open(inputfile) as data:
+                taxon_nodes = get_anytree_taxon_nodes(importer.read(data))
+                return tree_reparenting(taxon_nodes, root_key)
+        elif mode == "fast":
+            with open(inputfile) as data:
+                return json.load(data)
 
 
-def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
+def write_tree(tree: Node, outputfile: str, outputformat: str,
+               mode: str = "anytree", **kwargs) -> None:
     """
     Writes Tree to file.
 
     :param tree: anytree Node object
     :param outputfile: Path to outputfile
     :param outputformat: "json" or "pickle"
+    :param mode: "anytree" or "fast"
     :return: (side-effects) writes to file
     """
 
-    if outputformat == "pickle":
+    if outputformat == "pickle" or outputformat == "fast":
         with open(outputfile, 'wb') as outfile:
             pickle.dump(tree, outfile)
     elif outputformat == "json":
-        exporter = JsonExporter(**kwargs)
-        with open(outputfile, "w") as outfile:
-            exporter.write(tree, outfile)
+        if mode == "anytree":
+            exporter = JsonExporter(**kwargs)
+            with open(outputfile, "w") as outfile:
+                exporter.write(tree, outfile)
+        elif mode == "fast":
+            with open(outputfile, 'w') as outfile:
+                json.dump(tree, outfile)
 
 
 def filter_tree(tree: Node, filterfile: str,
@@ -430,13 +442,15 @@ def validate_tree_by_taxid_fast(tree: dict, tax_id: str) -> bool:
 
 
 class TaxonResolver(object):
-    def __init__(self, logging=None, **kwargs):
+    def __init__(self, mode="anytree", logging=None, **kwargs):
         self.root_key = "1"
         self.tree = None
         self._full_tree = None
         self.logging = logging
         self.kwargs = kwargs
+        self.mode = mode
         self._valid_formats = ("json", "pickle")
+        self._valid_modes = ("anytree", "fast")
 
     def download(self, outputfile, outputformat) -> None:
         """Download NCBI Taxonomy dump file."""
@@ -445,33 +459,44 @@ class TaxonResolver(object):
 
     def build(self, inputfile) -> None:
         """Build a tree from NCBI dump file."""
-        self.tree = build_tree(inputfile, self.root_key, self.logging)
+        if self.mode == "anytree":
+            self.tree = build_tree(inputfile, self.root_key, self.logging)
+            # keep a copy of the original (full) tree
+            self._full_tree = copy.copy(self.tree)
+        elif self.mode == "fast":
+            self.tree = build_tree_fast(inputfile)
 
     def load(self, inputfile, inputformat) -> None:
         """Load a tree from JSON or Pickle files."""
         inputformat = inputformat.lower()
-        if inputformat in self._valid_formats:
-            self.tree = load_tree(inputfile, inputformat, self.root_key, **self.kwargs)
+        if inputformat in self._valid_formats and self.mode in self._valid_modes:
+            self.tree = load_tree(inputfile, inputformat,
+                                  self.mode, self.root_key, **self.kwargs)
         else:
             if self.logging:
-                self.logging(f"Input format '{inputformat}' is not valid!")
+                self.logging(f"Input format '{inputformat}' "
+                             f"or mode '{self.mode}' is not valid!")
 
     def write(self, outputfile, outputformat) -> None:
         """Write a tree in JSON or Pickle formats."""
         outputformat = outputformat.lower()
-        if outputformat in self._valid_formats:
-            write_tree(self.tree, outputfile, outputformat, **self.kwargs)
+        if outputformat in self._valid_formats and self.mode in self._valid_modes:
+            write_tree(self.tree, outputfile, outputformat, self.mode, **self.kwargs)
         else:
             if self.logging:
-                self.logging(f"Output format '{outputformat}' is not valid!")
+                self.logging(f"Output format '{outputformat}' "
+                             f"or mode '{self.mode}' is not valid!")
 
     def filter(self, taxidfilter) -> None:
         """Re-build a tree ignoring Taxonomy IDs provided."""
-        # keep a copy of the original (full) tree
-        self._full_tree = copy.copy(self.tree)
+        message = None
         if not self._full_tree:
             message = ("The Taxonomy Tree needs to be built "
                        "before 'filter' can be called.")
+        if self.mode != "anytree":
+            message = ("Taxonomy Tree filtering is only "
+                       "compatible with mode 'anytree'.")
+        if message:
             if self.logging:
                 logging.warning(message)
             else:
@@ -480,32 +505,56 @@ class TaxonResolver(object):
 
     def validate(self, taxidsearch, taxidfilter=None) -> bool:
         """Validate a list of TaxIDs against a Tree."""
-        return validate_tree(self.tree, taxidsearch, taxidfilter)
+        if self.mode == "anytree":
+            return validate_tree(self.tree, taxidsearch, taxidfilter)
+        elif self.mode == "fast":
+            return validate_tree_fast(self.tree, taxidsearch, taxidfilter)
 
     def validate_by_taxid(self, taxid) -> bool:
         """Validate a TaxIDs against a Tree."""
-        return validate_tree_by_taxid(self.tree, taxid)
+        if self.mode == "anytree":
+            return validate_tree_by_taxid(self.tree, taxid)
+        elif self.mode == "fast":
+            return validate_tree_by_taxid_fast(self.tree, taxid)
 
     def search(self, taxidsearch, taxidfilter=None) -> list or None:
         """Search a Tree based on a list of TaxIds."""
-        if validate_tree(self.tree, taxidsearch, taxidfilter):
-            return search_tree(self.tree, taxidsearch, taxidfilter)
-        else:
-            message = ("Some of the provided TaxIDs are not valid or not found "
-                       "in the built Tree.")
-            if self.logging:
-                logging.warning(message)
+        message = ("Some of the provided TaxIDs are not valid or not found "
+                   "in the built Tree.")
+        if self.mode == "anytree":
+            if validate_tree(self.tree, taxidsearch, taxidfilter):
+                return search_tree(self.tree, taxidsearch, taxidfilter)
             else:
-                print_and_exit(message)
+                if self.logging:
+                    logging.warning(message)
+                else:
+                    print_and_exit(message)
+        elif self.mode == "fast":
+            if validate_tree_fast(self.tree, taxidsearch, taxidfilter):
+                return search_tree_fast(self.tree, taxidsearch, taxidfilter)
+            else:
+                if self.logging:
+                    logging.warning(message)
+                else:
+                    print_and_exit(message)
 
     def search_by_taxid(self, taxid) -> Node or None:
         """Retrieve a node by its unique TaxID."""
-        if validate_tree_by_taxid(self.tree, taxid):
-            return search_tree_by_taxid(self.tree, taxid)
-        else:
-            message = ("The provided TaxIDs is not valid or not found "
-                       "in the built Tree.")
-            if self.logging:
-                logging.warning(message)
+        message = ("The provided TaxIDs is not valid or not found "
+                   "in the built Tree.")
+        if self.mode == "anytree":
+            if validate_tree_by_taxid(self.tree, taxid):
+                return search_tree_by_taxid(self.tree, taxid)
             else:
-                print_and_exit(message)
+                if self.logging:
+                    logging.warning(message)
+                else:
+                    print_and_exit(message)
+        elif self.mode == "fast":
+            if validate_tree_by_taxid_fast(self.tree, taxid):
+                return search_tree_by_taxid_fast(self.tree, taxid)
+            else:
+                if self.logging:
+                    logging.warning(message)
+                else:
+                    print_and_exit(message)
