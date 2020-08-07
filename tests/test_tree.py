@@ -33,6 +33,12 @@ def cwd():
 
 
 class TestTree:
+    @pytest.mark.skip(reason="Skip test by default!")
+    def test_download_taxdump(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.download(os.path.join(cwd, f"../testdata/taxdump_full.zip"), "zip")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/taxdump_full.zip"))
+
     def test_resolver_build(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
