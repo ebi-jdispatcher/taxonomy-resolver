@@ -119,7 +119,7 @@ def search_tree(tree: dict, taxidfile: str, filterfile: str or None = None,
     :return: list of TaxIDs
     """
 
-    taxids_search = parse_tax_ids(taxidfile, sep, indx)
+    taxids_search = parse_tax_ids(taxidfile)
     taxids_filter = []
     if filterfile:
         taxids_filter = parse_tax_ids(filterfile, sep, indx)
@@ -166,7 +166,7 @@ def validate_tree(tree: dict, taxidfile: str, inputfile: str or None = None,
     :return: boolean
     """
 
-    taxids_search = parse_tax_ids(taxidfile, sep, indx)
+    taxids_search = parse_tax_ids(taxidfile)
     taxids_filter = []
     if inputfile:
         taxids_filter = parse_tax_ids(inputfile, sep, indx)
