@@ -218,6 +218,8 @@ def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
     """
 
     tax_ids = parse_tax_ids(filterfile, sep, indx)
+    # skipping "invalid" ids
+    tax_ids = [tax_id for tax_id in tax_ids if validate_tree_by_taxid(tree, tax_id)]
 
     # get list of all required (and unique) parents and children taxIDs
     tax_id_parents = [node.name for tax_id in tax_ids
