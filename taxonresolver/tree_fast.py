@@ -104,7 +104,7 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
 
 
 def search_tree(tree: dict, taxidfile: str, filterfile: str or None = None,
-                sep: str = " ", indx: int = 0) -> list:
+                sep: str = None, indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
@@ -153,7 +153,7 @@ def search_tree_by_taxid(tree: dict, tax_id: str) -> Node:
 
 
 def validate_tree(tree: dict, taxidfile: str, inputfile: str or None = None,
-                       sep: str = " ", indx: int = 0) -> bool:
+                  sep: str = None, indx: int = 0) -> bool:
     """
     Simply checks if TaxID is in the list or in the Tree.
 

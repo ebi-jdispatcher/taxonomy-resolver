@@ -102,7 +102,7 @@ def split_line(line) -> list:
     return [x.strip() for x in line.split("	|")]
 
 
-def parse_tax_ids(inputfile: str, sep: str = " ", indx: int = 0) -> list:
+def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list:
     """
     Parses a list of TaxIDs from an input file.
     It skips lines started with '#'.
@@ -119,7 +119,11 @@ def parse_tax_ids(inputfile: str, sep: str = " ", indx: int = 0) -> list:
             if line.startswith("#"):
                 continue
             line = line.rstrip()
-            tax_id = line.split(sep)[indx]
-            if tax_id != "":
-                tax_ids.append(tax_id)
+            if line != "":
+                if sep:
+                    tax_id = line.split(sep)[indx]
+                else:
+                    tax_id = line.split()[indx]
+                if tax_id != "":
+                    tax_ids.append(tax_id)
     return tax_ids

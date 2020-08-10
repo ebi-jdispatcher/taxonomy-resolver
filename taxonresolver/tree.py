@@ -204,7 +204,7 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
 
 
 def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
-                sep: str = " ", indx: int = 0) -> Node:
+                sep: str = None, indx: int = 0) -> Node:
     """
     Filters an existing Tree based on a List of TaxIDs file.
 
@@ -223,7 +223,7 @@ def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
 
     # get list of all required (and unique) parents and children taxIDs
     tax_id_parents = [node.name for tax_id in tax_ids
-                      for leave in find(tree, filter_=lambda n:n.name == tax_id).leaves
+                      for leave in find(tree, filter_=lambda n: n.name == tax_id).leaves
                       for node in find(tree, filter_=lambda n: n.name == leave.name).path]
     taxon_nodes = get_anytree_taxon_nodes(tree,
                                           filter_=lambda n: n.name in list(set(tax_id_parents)))
@@ -231,7 +231,7 @@ def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
 
 
 def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
-                sep: str = " ", indx: int = 0) -> list:
+                sep: str = None, indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
@@ -269,7 +269,7 @@ def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
 
 
 def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
-                  sep: str = " ", indx: int = 0) -> bool:
+                  sep: str = None, indx: int = 0) -> bool:
     """
     Simply checks if TaxID is in the list or in the Tree.
 

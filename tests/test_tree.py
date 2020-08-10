@@ -178,7 +178,7 @@ class TestTree:
         assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"),
                                      os.path.join(cwd, "../testdata/taxids_filter.txt"))
 
-    def test_search_by_taxid(self,  context, cwd):
+    def test_search_by_taxid(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
@@ -189,7 +189,7 @@ class TestTree:
         assert human.parent.parent.rank == "subfamily"
         assert human.parent.parent.taxonName == "Homininae"
 
-    def test_validate_by_taxid(self,  context, cwd):
+    def test_validate_by_taxid(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
