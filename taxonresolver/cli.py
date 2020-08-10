@@ -157,7 +157,7 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
     if mode == "anytree":
         resolver = TaxonResolver(logging)
     elif mode == "fast":
-        resolver = TaxonResolver(logging)
+        resolver = TaxonResolverFast(logging)
     else:
         print_and_exit(f"Mode '{mode}' is not valid!")
 
@@ -199,7 +199,7 @@ def validate(infile: str, informat: str, taxidsearch: str,
     if mode == "anytree":
         resolver = TaxonResolver(logging)
     elif mode == "fast":
-        resolver = TaxonResolver(logging)
+        resolver = TaxonResolverFast(logging)
     else:
         print_and_exit(f"Mode '{mode}' is not valid!")
 
