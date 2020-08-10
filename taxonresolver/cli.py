@@ -30,8 +30,6 @@ def add_common(options: list):
 
 
 common_options = [
-    click.option('-mode', '--mode', 'mode', type=str, required=False, default="anytree",
-                 multiple=False, help="Usage mode (currently 'anytree' or 'fast')."),
     click.option('-level', '--log_level', 'log_level', type=str, default='INFO',
                  multiple=False, help="Log level to use. Expects: 'DEBUG', 'INFO',"
                                       " 'WARN', 'ERROR', and 'CRITICAL'."),
@@ -39,6 +37,11 @@ common_options = [
                  multiple=False, help="File name to be used to writing logging."),
     click.option('--quiet', 'quiet', is_flag=True, default=False,
                  multiple=False, help="Disables logging.")
+]
+
+common_options_mode = [
+    click.option('-mode', '--mode', 'mode', type=str, required=False, default="anytree",
+                 multiple=False, help="Usage mode (currently 'anytree' or 'fast').")
 ]
 
 
@@ -83,6 +86,7 @@ def download(outfile: str, outformat: str,
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
+@add_common(common_options_mode)
 def build(infile: str, outfile: str, informat: str or None, outformat: str,
           taxidfilter: str, mode: str = "anytree",
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
@@ -135,6 +139,7 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
+@add_common(common_options_mode)
 def search(infile: str, outfile: str, informat: str, taxidsearch: str,
            taxidfilter: str = None, mode: str = "anytree",
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
@@ -176,6 +181,7 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
 @click.option('-taxidf', '--taxidfilter', 'taxidfilter', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
+@add_common(common_options_mode)
 def validate(infile: str, informat: str, taxidsearch: str,
              taxidfilter: str = None, mode: str = "anytree",
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
