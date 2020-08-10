@@ -117,7 +117,7 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
     elif mode == "fast":
         resolver = TaxonResolverFast(logging)
         logging.info(f"Building NCBI Taxonomy from {infile}... ")
-        resolver.build(infile)
+        resolver.build(infile, informat)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
     else:
         print_and_exit(f"Mode '{mode}' is not valid!")
