@@ -389,4 +389,3 @@ class TaxonResolver(object):
                 logging.warning(message)
             else:
                 print_and_exit(message)
-

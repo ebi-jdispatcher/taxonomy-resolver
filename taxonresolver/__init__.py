@@ -14,3 +14,4 @@ __version__ = '0.0.3'
 __contributors__ = [u'Fábio Madeira', u'Adrian Tivey']
 
 from taxonresolver.tree import TaxonResolver
+from taxonresolver.tree_fast import TaxonResolverFast
