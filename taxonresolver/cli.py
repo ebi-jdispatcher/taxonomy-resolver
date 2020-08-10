@@ -12,7 +12,8 @@ import click
 
 from taxonresolver import __version__
 
-from taxonresolver.tree import TaxonResolver
+from taxonresolver import TaxonResolver
+from taxonresolver import TaxonResolverFast
 from taxonresolver.utils import load_logging
 from taxonresolver.utils import print_and_exit
 from taxonresolver.utils import validate_inputs_outputs
@@ -95,19 +96,27 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs and outputs.")
 
-    resolver = TaxonResolver(mode, logging)
-    if informat:
-        resolver.load(infile, informat)
-        logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
-    else:
-        logging.info(f"Building NCBI Taxonomy from {infile}. "
-                     f"This can take several minutes to complete...")
+    if mode == "anytree":
+        resolver = TaxonResolver(logging)
+        if informat:
+            resolver.load(infile, informat)
+            logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
+        else:
+            logging.info(f"Building NCBI Taxonomy from {infile}. "
+                         f"This can take several minutes to complete...")
+            resolver.build(infile)
+            logging.info(f"Built NCBI Taxonomy from {infile}.")
+
+        if taxidfilter:
+            resolver.filter(taxidfilter)
+            logging.info(f"Filtered NCBI Taxonomy with {taxidfilter}.")
+    elif mode == "fast":
+        resolver = TaxonResolverFast(logging)
+        logging.info(f"Building NCBI Taxonomy from {infile}... ")
         resolver.build(infile)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
-
-    if taxidfilter:
-        resolver.filter(taxidfilter)
-        logging.info(f"Filtered NCBI Taxonomy with {taxidfilter}.")
+    else:
+        print_and_exit(f"Mode '{mode}' is not valid!")
 
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
@@ -140,7 +149,12 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs and outputs.")
 
-    resolver = TaxonResolver(mode, logging)
+    if mode == "anytree":
+        resolver = TaxonResolver(logging)
+    elif mode == "fast":
+        resolver = TaxonResolver(logging)
+    else:
+        print_and_exit(f"Mode '{mode}' is not valid!")
 
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
@@ -176,7 +190,12 @@ def validate(infile: str, informat: str, taxidsearch: str,
         validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs.")
 
-    resolver = TaxonResolver(mode, logging)
+    if mode == "anytree":
+        resolver = TaxonResolver(logging)
+    elif mode == "fast":
+        resolver = TaxonResolver(logging)
+    else:
+        print_and_exit(f"Mode '{mode}' is not valid!")
 
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
