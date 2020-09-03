@@ -85,18 +85,18 @@ def tree_reparenting(tree_dict: dict, root_key: str = "1",
 
     # If we knew the input file was ordered, we could speed this up massively
     # Loop over has keys and build a tree by re-parenting
-    def getRONode(tree_dict, tax_id):
+    def getNode(tree_dict, tax_id):
         parent_id = tree_dict[tax_id].parentTaxId
         if parent_id in tree_dict:
             if parent_id != tax_id:
                 tree_dict[tax_id].parent = tree_dict[parent_id]
-                getRONode(tree_dict, parent_id)
+                getNode(tree_dict, parent_id)
             else:
                 if logging:
                     logging.debug(f"Found root for {anytree_node.name}")
 
     for anytree_node in tree_dict.values():
-        getRONode(tree_dict, anytree_node.name)
+        getNode(tree_dict, anytree_node.name)
     return tree_dict[root_key]
 
 

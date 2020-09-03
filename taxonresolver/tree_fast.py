@@ -42,10 +42,10 @@ def tree_reparenting(tree_dict: dict) -> dict:
     :return: updated dict object
     """
     for k, v in tree_dict["nodes"].items():
-        if v["parent_tax_id"] not in tree_dict["parents"]:
-            tree_dict["parents"][v["parent_tax_id"]] = [v["tax_id"]]
+        if v["parent_tax_id"] not in tree_dict["children"]:
+            tree_dict["children"][v["parent_tax_id"]] = [v["tax_id"]]
         else:
-            tree_dict["parents"][v["parent_tax_id"]].append(v["tax_id"])
+            tree_dict["children"][v["parent_tax_id"]].append(v["tax_id"])
 
     return tree_dict
 
@@ -58,7 +58,7 @@ def build_tree(tree: Node) -> dict:
     :return: dict object
     """
 
-    tree_dict = {"nodes": {}, "parents": {}}
+    tree_dict = {"nodes": {}, "children": {}}
     # read nodes
     for node in findall(tree):
         dict_node = {}
@@ -131,12 +131,12 @@ def search_tree(tree: dict, taxidfile: str, filterfile: str or None = None,
             taxids_found.extend(taxids)
             for taxid in taxids:
                 try:
-                    get_leaves(tree["parents"][taxid], tree)
+                    get_leaves(tree["children"][taxid], tree)
                 except KeyError:
                     # taxid is a leaf node - i.e. it is not a parent of any other TaxID
                     pass
 
-        get_leaves(tree["parents"][tax_id], tree)
+        get_leaves(tree["children"][tax_id], tree)
 
     return list(set(taxids_found))
 

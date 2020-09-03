@@ -12,10 +12,13 @@ import os
 import pytest
 try:
     import fastcache
-    from anytree.cachedsearch import findall, find_by_attr
+    from anytree.cachedsearch import findall
+    from anytree.cachedsearch import find_by_attr
 except ModuleNotFoundError:
-    from anytree.search import findall, find_by_attr
-from anytree.iterators import PreOrderIter, LevelOrderIter
+    from anytree.search import findall
+    from anytree.search import find_by_attr
+from anytree.iterators import PreOrderIter
+from anytree.iterators import LevelOrderIter
 from taxonresolver import TaxonResolver
 from taxonresolver.utils import load_logging
 
