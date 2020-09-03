@@ -247,13 +247,15 @@ def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
     """
 
     taxids_search = parse_tax_ids(taxidfile)
-    taxids_filter = []
+    taxids_found = []
+    for tax_id in taxids_search:
+        for leave in find(tree, filter_=lambda n: n.name == tax_id).leaves:
+            nodes = [node.name for node in find(tree, filter_=lambda n: n.name == leave.name).path]
+            taxids_found.extend(nodes[nodes.index(tax_id) + 1:])
+
     if filterfile:
         taxids_filter = parse_tax_ids(filterfile, sep, indx)
-
-    taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
-    taxids_found.extend([node.name for tax_id in taxids_search
-                         for node in find(tree, filter_=lambda n: n.name == tax_id).leaves])
+        taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
     return list(set(taxids_found))
 
 

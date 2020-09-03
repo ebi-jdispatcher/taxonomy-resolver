@@ -120,11 +120,7 @@ def search_tree(tree: dict, taxidfile: str, filterfile: str or None = None,
     """
 
     taxids_search = parse_tax_ids(taxidfile)
-    taxids_filter = []
-    if filterfile:
-        taxids_filter = parse_tax_ids(filterfile, sep, indx)
-
-    taxids_found = [tax_id for tax_id in taxids_search if tax_id in taxids_filter]
+    taxids_found = []
     for tax_id in taxids_search:
         # list of children
         def get_leaves(taxids: list, tree: dict):
@@ -138,6 +134,9 @@ def search_tree(tree: dict, taxidfile: str, filterfile: str or None = None,
 
         get_leaves(tree["children"][tax_id], tree)
 
+    if filterfile:
+        taxids_filter = parse_tax_ids(filterfile, sep, indx)
+        taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
     return list(set(taxids_found))
 
 

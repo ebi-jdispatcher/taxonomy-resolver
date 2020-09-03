@@ -165,7 +165,7 @@ class TestTree:
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
         tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"),
                                   os.path.join(cwd, "../testdata/taxids_filter.txt"))
-        assert len(tax_ids) == 386
+        assert len(tax_ids) == 302
 
     def test_resolver_validate(self, context, cwd):
         resolver = TaxonResolver(logging=context)
