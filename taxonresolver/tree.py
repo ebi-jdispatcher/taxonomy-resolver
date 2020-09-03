@@ -15,7 +15,6 @@ import zipfile
 import logging
 from collections import defaultdict
 
-from anytree import Node
 from anytree.importer import JsonImporter
 from anytree.exporter import JsonExporter
 
@@ -27,6 +26,7 @@ except ModuleNotFoundError:
     from anytree.search import find
     from anytree.search import findall
 
+from taxonresolver.utils import Node
 from taxonresolver.utils import label_to_id
 from taxonresolver.utils import escape_literal
 from taxonresolver.utils import split_line
