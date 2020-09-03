@@ -235,6 +235,12 @@ If you find any bugs or issues please log them in the `issue tracker`_.
 Changelog
 =========
 
+**0.0.4**
+
+- Fixed the logic under validation and searching
+- Added `TaxonResolverFast` class for faster searching and validation (but it requires a built Tree)
+- Added `--mode 'fast'` mode to the CLI
+
 **0.0.3**
 
 - Improved filtering and searching functions
