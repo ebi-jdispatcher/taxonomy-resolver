@@ -59,7 +59,7 @@ class TestTree:
         assert human.parent.taxonName == "Homo"
         assert human.parent.parent.rank == "subfamily"
         assert human.parent.parent.taxonName == "Homininae"
-        human = resolver.search_by_taxid("9606")
+        human = resolver.find_by_taxid("9606")
         assert human.rank == "species"
         assert human.parent.rank == "genus"
         assert human.parent.taxonName == "Homo"
@@ -185,7 +185,7 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_filtered.json"), "json")
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
-        human = resolver.search_by_taxid("9606")
+        human = resolver.find_by_taxid("9606")
         assert human.rank == "species"
         assert human.parent.rank == "genus"
         assert human.parent.taxonName == "Homo"

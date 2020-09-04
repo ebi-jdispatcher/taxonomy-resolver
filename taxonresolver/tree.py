@@ -55,7 +55,7 @@ def get_node_from_dict(node: dict,
 
 def get_anytree_taxon_nodes(tree, filter_=None) -> dict:
     """
-    Creates a dict of nodes on the fly that is then used for reparenting.
+    Creates a dict of nodes that is then used for re-parenting.
 
     :param tree: anytree Node object
     :param filter_: function called with every `node` as argument,
@@ -75,7 +75,7 @@ def get_anytree_taxon_nodes(tree, filter_=None) -> dict:
 def tree_reparenting(tree_dict: dict, root_key: str = "1",
                      logging: logging or None = None) -> Node:
     """
-    Loops over the Tree dictionary and reparents every node
+    Loops over the Tree dictionary and re-parents every node.
 
     :param tree_dict: dict of anytree node objects
     :param root_key: Key of the root Node
@@ -103,7 +103,7 @@ def tree_reparenting(tree_dict: dict, root_key: str = "1",
 def build_tree(inputfile: str, root_key: str = "1",
                logging: logging or None = None) -> Node:
     """
-    Given the path to the taxdmp.zip file, build a full tree,
+    Given the path to the taxdmp.zip file, build a full Tree,
     by converting nodes to anytree nodes.
 
     :param inputfile: Path to taxdmp.zip file
@@ -186,7 +186,7 @@ def load_tree(inputfile: str, inputformat: str = "pickle",
 
 def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
     """
-    Writes Tree to file.
+    Writes a Tree to file.
 
     :param tree: anytree Node object
     :param outputfile: Path to outputfile
@@ -206,7 +206,7 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
 def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
                 sep: str = None, indx: int = 0) -> Node:
     """
-    Filters an existing Tree based on a List of TaxIDs file.
+    Filters an existing Tree based on a list of TaxIDs.
 
     :param tree: anytree Node object
     :param filterfile: Path to inputfile, which is a list of
@@ -219,7 +219,7 @@ def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
 
     tax_ids = parse_tax_ids(filterfile, sep, indx)
     # skipping "invalid" ids
-    tax_ids = [tax_id for tax_id in tax_ids if validate_tree_by_taxid(tree, tax_id)]
+    tax_ids = [tax_id for tax_id in tax_ids if validate_by_taxid(tree, tax_id)]
 
     # get list of all required (and unique) parents and children taxIDs
     tax_id_parents = [node.name for tax_id in tax_ids
@@ -230,38 +230,46 @@ def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
     return tree_reparenting(taxon_nodes, root_key)
 
 
-def search_tree(tree: Node, taxidfile: str, filterfile: str or None = None,
-                sep: str = None, indx: int = 0) -> list:
+def search_taxids(tree: Node, searchids: list or str,
+                  filterids: list or str or None = None,
+                  sep: str = None, indx: int = 0) -> list:
     """
     Searches an existing Tree and produces a list of TaxIDs.
     Checks if TaxID is in the list, if so provides as is, else,
-        searches all children in the list that compose that node.
-
+        searches all children in the list that compose that node
+        (i.e. finds it's leaves)
     :param tree: anytree Node object
-    :param taxidfile: Path to file with TaxIDs to search with
-    :param filterfile: Path to inputfile, which is a list of
-        Taxonomy Identifiers (optional)
+    :param searchids: list of TaxIDs or Path to file with TaxIDs to search with
+    :param filterids: list of TaxIDs or None or Path to inputfile,
+        which is a list of TaxIDs (optional)
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: list of TaxIDs
     """
 
-    taxids_search = parse_tax_ids(taxidfile)
+    if type(searchids) is list:
+        taxids_search = searchids
+    elif type(searchids) is str:
+        taxids_search = parse_tax_ids(searchids)
     taxids_found = []
     for tax_id in taxids_search:
         for leave in find(tree, filter_=lambda n: n.name == tax_id).leaves:
             nodes = [node.name for node in find(tree, filter_=lambda n: n.name == leave.name).path]
             taxids_found.extend(nodes[nodes.index(tax_id) + 1:])
 
-    if filterfile:
-        taxids_filter = parse_tax_ids(filterfile, sep, indx)
+    taxids_filter = []
+    if type(filterids) is list:
+        taxids_filter = filterids
+    elif type(filterids) is str:
+         taxids_filter = parse_tax_ids(filterids, sep, indx)
+    if taxids_filter:
         taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
     return list(set(taxids_found))
 
 
-def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
+def find_by_taxid(tree: Node, tax_id: str) -> Node:
     """
-    Simply checks if TaxID is in the list or in the Tree.
+    Retrieves a TaxID node.
 
     :param tree: anytree Node object
     :param tax_id: TaxID
@@ -270,27 +278,34 @@ def search_tree_by_taxid(tree: Node, tax_id: str) -> Node:
     return find(tree, filter_=lambda n: n.name == tax_id)
 
 
-def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
-                  sep: str = None, indx: int = 0) -> bool:
+def validate_taxids(tree: Node, validateids: list or str or None,
+                    filterids: list or str or None = None,
+                    sep: str = None, indx: int = 0) -> bool:
     """
-    Simply checks if TaxID is in the list or in the Tree.
+    Checks if TaxIDs are in the list and in the Tree.
 
     :param tree: anytree Node object
-    :param taxidfile: Path to file with TaxIDs to search with
-    :param inputfile: Path to inputfile, which is a list of
-        Taxonomy Identifiers
+    :param validateids: list of TaxIDs or Path to file with TaxIDs to validate
+    :param filterids: list of TaxIDs or None or Path to inputfile,
+        which is a list of TaxIDs (optional)
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: boolean
     """
 
-    taxids_search = parse_tax_ids(taxidfile)
+    if type(validateids) is list:
+        taxids_validate = validateids
+    elif type(validateids) is str:
+        taxids_validate = parse_tax_ids(validateids)
+
     taxids_filter = []
-    if inputfile:
-        taxids_filter = parse_tax_ids(inputfile, sep, indx)
+    if type(filterids) is list:
+        taxids_filter = filterids
+    elif type(filterids) is str:
+         taxids_filter = parse_tax_ids(filterids, sep, indx)
 
     taxids_valid = []
-    for tax_id in taxids_search:
+    for tax_id in taxids_validate:
         if (tax_id in taxids_filter or
                 tax_id in [node.name for node in findall(tree)]):
             taxids_valid.append(True)
@@ -299,9 +314,9 @@ def validate_tree(tree: Node, taxidfile: str, inputfile: str or None = None,
     return False if False in taxids_valid else True
 
 
-def validate_tree_by_taxid(tree: Node, tax_id: str) -> bool:
+def validate_by_taxid(tree: Node, tax_id: str) -> bool:
     """
-    Simply checks if TaxID is in the list or in the Tree.
+    Checks if a TaxID is in the Tree.
 
     :param tree: anytree Node object
     :param tax_id: TaxID
@@ -331,7 +346,7 @@ class TaxonResolver(object):
         self._full_tree = copy.copy(self.tree)
 
     def load(self, inputfile, inputformat) -> None:
-        """Load a tree from JSON or Pickle files."""
+        """Load a tree from JSON or Pickle file."""
         inputformat = inputformat.lower()
         if inputformat in self._valid_formats:
             self.tree = load_tree(inputfile, inputformat, self.root_key, **self.kwargs)
@@ -351,7 +366,7 @@ class TaxonResolver(object):
                 self.logging(f"Output format '{outputformat}' is not valid!")
 
     def filter(self, taxidfilter, **kwargs) -> None:
-        """Re-build a tree ignoring Taxonomy IDs provided."""
+        """Re-build a Tree based on the TaxIDs provided."""
         if not self._full_tree:
             message = ("The Taxonomy Tree needs to be built "
                        "before 'filter' can be called.")
@@ -361,18 +376,18 @@ class TaxonResolver(object):
                 print_and_exit(message)
         self.tree = filter_tree(self.tree, taxidfilter, self.root_key, **kwargs)
 
-    def validate(self, taxidsearch, taxidfilter=None, **kwargs) -> bool:
+    def validate(self, taxidvalidate, taxidfilter=None, **kwargs) -> bool:
         """Validate a list of TaxIDs against a Tree."""
-        return validate_tree(self.tree, taxidsearch, taxidfilter, **kwargs)
+        return validate_taxids(self.tree, taxidvalidate, taxidfilter, **kwargs)
 
     def validate_by_taxid(self, taxid) -> bool:
-        """Validate a TaxIDs against a Tree."""
-        return validate_tree_by_taxid(self.tree, taxid)
+        """Validate a TaxID against a Tree."""
+        return validate_by_taxid(self.tree, taxid)
 
     def search(self, taxidsearch, taxidfilter=None, **kwargs) -> list or None:
         """Search a Tree based on a list of TaxIds."""
-        if validate_tree(self.tree, taxidsearch, taxidfilter):
-            return search_tree(self.tree, taxidsearch, taxidfilter, **kwargs)
+        if validate_taxids(self.tree, taxidsearch, taxidfilter):
+            return search_taxids(self.tree, taxidsearch, taxidfilter, **kwargs)
         else:
             message = ("Some of the provided TaxIDs are not valid or not found "
                        "in the built Tree.")
@@ -381,11 +396,11 @@ class TaxonResolver(object):
             else:
                 print_and_exit(message)
 
-    def search_by_taxid(self, taxid) -> Node or None:
+    def find_by_taxid(self, taxid) -> Node or None:
         """Retrieve a node by its unique TaxID."""
 
-        if validate_tree_by_taxid(self.tree, taxid):
-            return search_tree_by_taxid(self.tree, taxid)
+        if validate_by_taxid(self.tree, taxid):
+            return find_by_taxid(self.tree, taxid)
         else:
             message = ("The provided TaxIDs is not valid or not found "
                        "in the built Tree.")

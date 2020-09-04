@@ -40,7 +40,7 @@ class TestTree:
         resolver.build(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         nodes = resolver.tree["nodes"]
         assert len(nodes) == 12086
-        human = resolver.search_by_taxid("9606")
+        human = resolver.find_by_taxid("9606")
         assert human["parent_tax_id"] == "9605"
         assert human["rank"] == "species"
 
@@ -74,7 +74,7 @@ class TestTree:
         resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
         nodes = resolver.tree["nodes"]
         assert len(nodes) == 12086
-        human = resolver.search_by_taxid("9606")
+        human = resolver.find_by_taxid("9606")
         assert human["parent_tax_id"] == "9605"
         assert human["rank"] == "species"
 
@@ -105,7 +105,7 @@ class TestTree:
         resolver = TaxonResolverFast(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
         resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
-        human = resolver.search_by_taxid("9606")
+        human = resolver.find_by_taxid("9606")
         assert human["parent_tax_id"] == "9605"
         assert human["rank"] == "species"
 
