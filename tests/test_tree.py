@@ -10,6 +10,7 @@ NCBI Taxonomy Resolver
 
 import os
 import pytest
+
 try:
     import fastcache
     from anytree.cachedsearch import findall

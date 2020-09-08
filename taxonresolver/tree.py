@@ -203,21 +203,25 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
             exporter.write(tree, outfile)
 
 
-def filter_tree(tree: Node, filterfile: str, root_key: str = "1",
+def filter_tree(tree: Node, filterids: list or str, root_key: str = "1",
                 sep: str = None, indx: int = 0) -> Node:
     """
     Filters an existing Tree based on a list of TaxIDs.
 
     :param tree: anytree Node object
-    :param filterfile: Path to inputfile, which is a list of
-        Taxonomy Identifiers
+    :param filterids: list of TaxIDs or Path to inputfile,
+        which is a list of TaxIDs
     :param root_key: Key of the root Node
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: anytree Node object
     """
+    tax_ids = []
+    if type(filterids) is list:
+        tax_ids = filterids
+    elif type(filterids) is str:
+        tax_ids = parse_tax_ids(filterids, sep, indx)
 
-    tax_ids = parse_tax_ids(filterfile, sep, indx)
     # skipping "invalid" ids
     tax_ids = [tax_id for tax_id in tax_ids if validate_by_taxid(tree, tax_id)]
 
@@ -261,7 +265,7 @@ def search_taxids(tree: Node, searchids: list or str,
     if type(filterids) is list:
         taxids_filter = filterids
     elif type(filterids) is str:
-         taxids_filter = parse_tax_ids(filterids, sep, indx)
+        taxids_filter = parse_tax_ids(filterids, sep, indx)
     if taxids_filter:
         taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
     return list(set(taxids_found))
@@ -302,7 +306,7 @@ def validate_taxids(tree: Node, validateids: list or str or None,
     if type(filterids) is list:
         taxids_filter = filterids
     elif type(filterids) is str:
-         taxids_filter = parse_tax_ids(filterids, sep, indx)
+        taxids_filter = parse_tax_ids(filterids, sep, indx)
 
     taxids_valid = []
     for tax_id in taxids_validate:
