@@ -108,25 +108,23 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 
     if mode == "anytree":
         resolver = TaxonResolver(logging)
-        if informat:
-            resolver.load(infile, informat)
-            logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
-        else:
-            logging.info(f"Building NCBI Taxonomy from {infile}. "
-                         f"This can take several minutes to complete...")
-            resolver.build(infile)
-            logging.info(f"Built NCBI Taxonomy from {infile}.")
-
-        if taxidfilter:
-            resolver.filter(taxidfilter, sep=sep, indx=indx)
-            logging.info(f"Filtered NCBI Taxonomy with {taxidfilter}.")
     elif mode == "fast":
         resolver = TaxonResolverFast(logging)
-        logging.info(f"Building NCBI Taxonomy from {infile}... ")
-        resolver.build(infile, informat)
-        logging.info(f"Built NCBI Taxonomy from {infile}.")
     else:
         print_and_exit(f"Mode '{mode}' is not valid!")
+
+    if informat:
+        resolver.load(infile, informat)
+        logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
+    else:
+        logging.info(f"Building NCBI Taxonomy from {infile}. "
+                     f"This may take several minutes to complete...")
+        resolver.build(infile)
+        logging.info(f"Built NCBI Taxonomy from {infile}.")
+
+    if taxidfilter:
+        resolver.filter(taxidfilter, sep=sep, indx=indx)
+        logging.info(f"Filtered NCBI Taxonomy with {taxidfilter}.")
 
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
