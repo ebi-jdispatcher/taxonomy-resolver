@@ -37,16 +37,16 @@ def cwd():
 class TestTree:
     def test_resolver_build(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)
-        resolver.build(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
         nodes = resolver.tree["nodes"]
-        assert len(nodes) == 12086
+        assert len(nodes) == 12099
         human = resolver.find_by_taxid("9606")
         assert human["parent_tax_id"] == "9605"
         assert human["rank"] == "species"
 
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)
-        resolver.build(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
         resolver.write(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
         assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast.pickle"))
         resolver.write(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
@@ -56,13 +56,13 @@ class TestTree:
         resolver = TaxonResolverFast(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
         nodes = resolver.tree["nodes"]
-        assert len(nodes) == 12086
+        assert len(nodes) == 12099
 
     def test_resolver_load_json(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
         nodes = resolver.tree["nodes"]
-        assert len(nodes) == 12086
+        assert len(nodes) == 12099
 
     def test_resolver_write_and_load(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)
@@ -73,10 +73,32 @@ class TestTree:
         resolver = TaxonResolverFast(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
         nodes = resolver.tree["nodes"]
-        assert len(nodes) == 12086
+        assert len(nodes) == 12099
         human = resolver.find_by_taxid("9606")
         assert human["parent_tax_id"] == "9605"
         assert human["rank"] == "species"
+
+    def test_resolver_filter(self, context, cwd):
+        resolver = TaxonResolverFast(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 593
+
+    def test_resolver_filter_and_write(self, context, cwd):
+        resolver = TaxonResolverFast(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        resolver.write(os.path.join(cwd, "../testdata/tree_fast_filtered.pickle"), "pickle")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast_filtered.pickle"))
+        resolver.write(os.path.join(cwd, "../testdata/tree_fast_filtered.json"), "json")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_fast_filtered.json"))
+
+    def test_resolver_filter_load(self, context, cwd):
+        resolver = TaxonResolverFast(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast_filtered.json"), "json")
+        nodes = resolver.tree["nodes"]
+        assert len(nodes) == 593
 
     def test_resolver_search(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)

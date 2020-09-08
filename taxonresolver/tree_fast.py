@@ -14,9 +14,11 @@ It is not intended for building and filtering, which is performed
 by the main tree.py.
 """
 
+import io
 import json
 import copy
 import pickle
+import zipfile
 import logging
 
 from anytree import Node
@@ -29,9 +31,10 @@ except ModuleNotFoundError:
     from anytree.search import find
     from anytree.search import findall
 
-from taxonresolver import TaxonResolver
 from taxonresolver.utils import parse_tax_ids
 from taxonresolver.utils import print_and_exit
+from taxonresolver.utils import split_line
+from taxonresolver.utils import label_to_id
 
 
 def tree_reparenting(tree_dict: dict) -> dict:
@@ -50,7 +53,7 @@ def tree_reparenting(tree_dict: dict) -> dict:
     return tree_dict
 
 
-def build_tree(tree: Node) -> dict:
+def build_tree(inputfile: str) -> dict:
     """
     Given the path to a anytree Tree, builds a slim data structure.
 
@@ -60,12 +63,15 @@ def build_tree(tree: Node) -> dict:
 
     tree_dict = {"nodes": {}, "children": {}}
     # read nodes
-    for node in findall(tree):
-        dict_node = {}
-        dict_node["tax_id"] = node.name
-        dict_node["parent_tax_id"] = node.parentTaxId
-        dict_node["rank"] = node.rank
-        tree_dict["nodes"][node.name] = dict_node
+    with zipfile.ZipFile(inputfile) as taxdmp:
+        with taxdmp.open("nodes.dmp") as dmp:
+            for line in io.TextIOWrapper(dmp):
+                dict_node = {}
+                fields = split_line(line)
+                dict_node["tax_id"] = fields[0]
+                dict_node["parent_tax_id"] = fields[1]
+                dict_node["rank"] = label_to_id(fields[2])
+                tree_dict["nodes"][dict_node["tax_id"]] = dict_node
     return tree_reparenting(tree_dict)
 
 
@@ -75,7 +81,7 @@ def load_tree(inputfile: str, inputformat: str = "pickle", **kwargs) -> Node:
 
     :param inputfile: Path to outputfile
     :param inputformat: "json" or "pickle"
-    :return: dict of anytree node objects
+    :return: dict object
     """
 
     if inputformat == "pickle":
@@ -85,11 +91,11 @@ def load_tree(inputfile: str, inputformat: str = "pickle", **kwargs) -> Node:
             return json.load(data, **kwargs)
 
 
-def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None:
+def write_tree(tree: dict, outputfile: str, outputformat: str, **kwargs) -> None:
     """
     Writes a Tree to file.
 
-    :param tree: anytree Node object
+    :param tree: dict object
     :param outputfile: Path to outputfile
     :param outputformat: "json" or "pickle"
     :return: (side-effects) writes to file
@@ -101,6 +107,35 @@ def write_tree(tree: Node, outputfile: str, outputformat: str, **kwargs) -> None
     elif outputformat == "json":
         with open(outputfile, 'w') as outfile:
             json.dump(tree, outfile, **kwargs)
+
+
+def filter_tree(tree: dict, filterids: list or str,
+                sep: str = None, indx: int = 0) -> dict:
+    """
+    Filters an existing Tree based on a list of TaxIDs.
+
+    :param tree: fast dict object
+    :param filterids: list of TaxIDs or Path to inputfile,
+        which is a list of TaxIDs
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: dict object
+    """
+    tax_ids = []
+    if type(filterids) is list:
+        tax_ids = filterids
+    elif type(filterids) is str:
+        tax_ids = parse_tax_ids(filterids, sep, indx)
+
+    # skipping "invalid" ids
+    tax_ids = [tax_id for tax_id in tax_ids if validate_by_taxid(tree, tax_id)]
+
+    # get list of all required (and unique) parents and children taxIDs
+    tree_dict = {"nodes": {}, "children": {}}
+    for tax_id in tax_ids:
+        tree_dict["nodes"][tax_id] = tree["nodes"][tax_id]
+
+    return tree_reparenting(tree_dict)
 
 
 def search_taxids(tree: dict, searchids: list or str,
@@ -143,7 +178,7 @@ def search_taxids(tree: dict, searchids: list or str,
     if type(filterids) is list:
         taxids_filter = filterids
     elif type(filterids) is str:
-         taxids_filter = parse_tax_ids(filterids, sep, indx)
+        taxids_filter = parse_tax_ids(filterids, sep, indx)
     if taxids_filter:
         taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
     return list(set(taxids_found))
@@ -184,7 +219,7 @@ def validate_taxids(tree: dict, validateids: list or str or None,
     if type(filterids) is list:
         taxids_filter = filterids
     elif type(filterids) is str:
-         taxids_filter = parse_tax_ids(filterids, sep, indx)
+        taxids_filter = parse_tax_ids(filterids, sep, indx)
 
     taxids_valid = []
     for tax_id in taxids_validate:
@@ -214,11 +249,9 @@ class TaxonResolverFast(object):
         self.kwargs = kwargs
         self._valid_formats = ("json", "pickle")
 
-    def build(self, inputfile, inputformat) -> None:
+    def build(self, inputfile) -> None:
         """Build a tree from NCBI dump file."""
-        resolver = TaxonResolver(self.logging)
-        resolver.load(inputfile, inputformat)
-        self.tree = build_tree(resolver.tree)
+        self.tree = build_tree(inputfile)
         # keep a copy of the original (full) tree
         self._full_tree = copy.copy(self.tree)
 
@@ -241,6 +274,17 @@ class TaxonResolverFast(object):
         else:
             if self.logging:
                 self.logging(f"Output format '{outputformat}' is not valid!")
+
+    def filter(self, taxidfilter, **kwargs) -> None:
+        """Re-build a Tree based on the TaxIDs provided."""
+        if not self._full_tree:
+            message = ("The Taxonomy Tree needs to be built "
+                       "before 'filter' can be called.")
+            if self.logging:
+                logging.warning(message)
+            else:
+                print_and_exit(message)
+        self.tree = filter_tree(self.tree, taxidfilter, **kwargs)
 
     def validate(self, taxidvalidate, taxidfilter=None, **kwargs) -> bool:
         """Validate a list of TaxIDs against a Tree."""
