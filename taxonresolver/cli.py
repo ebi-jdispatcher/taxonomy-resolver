@@ -199,7 +199,7 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
 @click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=True,
               multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilters', type=str, required=False,
-              multiple=False, help="Path to Taxonomy id list file used to filter the Tree.")
+              multiple=True, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
 @add_common(common_options_mode)
 @add_common(common_options_parsing)
