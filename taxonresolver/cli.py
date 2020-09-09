@@ -142,18 +142,22 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 @click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
               multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
                                     "(currently: 'json' or 'pickle')."))
-@click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
+@click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=False,
               multiple=False, help="Path to output file.")
 @click.option('-inf', '--informat', 'informat', type=str, default="json", required=True,
               multiple=False, help="Input format (currently: 'json' or 'pickle').")
-@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=True,
+@click.option('-taxid', '--taxid', 'taxid', is_flag=False, type=str, required=False,
+              multiple=False, help=("Comma-separated TaxIDs. Output to STDOUT by default, "
+                                    "unless an output file is provided."))
+@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilters', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
 @add_common(common_options_mode)
 @add_common(common_options_parsing)
-def search(infile: str, outfile: str, informat: str, taxidsearch: str,
+def search(infile: str, outfile: str or None, informat: str,
+           taxid: str or None, taxidsearch: str or None,
            taxidfilters: tuple = None, mode: str = "anytree",
            sep: str = None, indx: int = 0,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
@@ -162,8 +166,14 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
     logging = load_logging(log_level, log_output, disabled=quiet)
 
     # input options validation
-    validate_inputs_outputs(inputfile=infile, outputfile=outfile)
-    validate_inputs_outputs(inputfile=taxidsearch)
+    if not taxid and not taxidsearch:
+        print_and_exit(f"TaxIDs need to be provided to execute a search!")
+
+    validate_inputs_outputs(inputfile=infile)
+    if outfile:
+        validate_inputs_outputs(outputfile=outfile)
+    if taxidsearch:
+        validate_inputs_outputs(inputfile=taxidsearch)
     if taxidfilters:
         for taxidfilter in taxidfilters:
             validate_inputs_outputs(inputfile=taxidfilter)
@@ -184,9 +194,16 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
         for taxidfilter in taxidfilters:
             taxidfilterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
 
-    tax_ids = resolver.search(taxidsearch, list(set(taxidfilterids)))
-    with open(outfile, "w") as outfile:
-        outfile.write("\n".join(tax_ids))
+    if taxidsearch:
+        searchids = taxidsearch
+    else:
+        searchids = list(set(taxid.split(",")))
+    tax_ids = resolver.search(searchids, list(set(taxidfilterids)))
+    if outfile:
+        with open(outfile, "w") as outfile:
+            outfile.write("\n".join(tax_ids))
+    else:
+        print(",".join(tax_ids))
     logging.info(f"Wrote list of TaxIDS in {outfile}.")
 
 
@@ -196,14 +213,17 @@ def search(infile: str, outfile: str, informat: str, taxidsearch: str,
                                     "(currently: 'json' or 'pickle')."))
 @click.option('-inf', '--informat', 'informat', type=str, default="json", required=True,
               multiple=False, help="Input format (currently: 'json' or 'pickle').")
-@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=True,
+@click.option('-taxid', '--taxid', 'taxid', is_flag=False, type=str, required=False,
+              multiple=False, help="Comma-separated TaxIDs. Output to STDOUT by default.")
+@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=False,
               multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilters', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to filter the Tree.")
 @add_common(common_options)
 @add_common(common_options_mode)
 @add_common(common_options_parsing)
-def validate(infile: str, informat: str, taxidsearch: str,
+def validate(infile: str, informat: str,
+             taxid: str or None, taxidsearch: str or None,
              taxidfilters: tuple = None, mode: str = "anytree",
              sep: str = None, indx: int = 0,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
@@ -212,8 +232,12 @@ def validate(infile: str, informat: str, taxidsearch: str,
     logging = load_logging(log_level, log_output, disabled=quiet)
 
     # input options validation
+    if not taxid and not taxidsearch:
+        print_and_exit(f"TaxIDs need to be provided to execute a search!")
+
     validate_inputs_outputs(inputfile=infile)
-    validate_inputs_outputs(inputfile=taxidsearch)
+    if taxidsearch:
+        validate_inputs_outputs(inputfile=taxidsearch)
     if taxidfilters:
         for taxidfilter in taxidfilters:
             validate_inputs_outputs(inputfile=taxidfilter)
@@ -233,7 +257,11 @@ def validate(infile: str, informat: str, taxidsearch: str,
     if taxidfilters:
         for taxidfilter in taxidfilters:
             taxidfilterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
-    valid = resolver.validate(taxidsearch, list(set(taxidfilterids)))
+    if taxidsearch:
+        searchids = taxidsearch
+    else:
+        searchids = list(set(taxid.split(",")))
+    valid = resolver.validate(searchids, list(set(taxidfilterids)))
     logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
     print_and_exit(str(valid))
 
