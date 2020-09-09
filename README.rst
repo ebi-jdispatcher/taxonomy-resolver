@@ -235,6 +235,14 @@ If you find any bugs or issues please log them in the `issue tracker`_.
 Changelog
 =========
 
+**0.0.5**
+
+- Brought TaxonResolverFast in line with the functionality of TaxonResolver
+- Searching and validation based on lists of TaxIDs (instead of relying only on files)
+- Updated CLI to take multiple filter files
+- Updated CLI to take comma-separated values for search and validation
+- CLI writes to STDOUT by default for search and validation
+
 **0.0.4**
 
 - Fixed the logic under validation and searching
