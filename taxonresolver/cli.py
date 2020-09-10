@@ -203,7 +203,10 @@ def search(infile: str, outfile: str or None, informat: str,
         with open(outfile, "w") as outfile:
             outfile.write("\n".join(tax_ids))
     else:
-        print(",".join(tax_ids))
+        try:
+            print(",".join(tax_ids))
+        except TypeError:
+            print(tax_ids)
     logging.info(f"Wrote list of TaxIDS in {outfile}.")
 
 
