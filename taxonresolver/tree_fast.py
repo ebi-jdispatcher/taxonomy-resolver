@@ -172,7 +172,8 @@ def search_taxids(tree: dict, searchids: list or str,
                     # taxid is a leaf node - i.e. it is not a parent of any other TaxID
                     pass
 
-        get_leaves(tree["children"][tax_id], tree)
+        if tax_id in tree["children"]:
+            get_leaves(tree["children"][tax_id], tree)
 
     taxids_filter = []
     if type(filterids) is list:

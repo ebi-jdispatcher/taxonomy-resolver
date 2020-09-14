@@ -115,7 +115,6 @@ class TestTree:
         assert resolver.validate(os.path.join(cwd, "../testdata/taxids_validate.txt"),
                                  os.path.join(cwd, "../testdata/taxids_filter.txt"))
 
-
     def test_resolver_validate_alt(self, context, cwd):
         resolver = TaxonResolverFast(logging=context)
         # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
