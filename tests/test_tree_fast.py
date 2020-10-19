@@ -137,3 +137,10 @@ class TestTree:
         assert resolver.validate_by_taxid("9606")
         with pytest.raises(AssertionError):
             assert resolver.validate_by_taxid("000")
+
+    def test_search_by_taxid_human(self, context, cwd):
+        resolver = TaxonResolverFast(logging=context)
+        # resolver.load(os.path.join(cwd, "../testdata/tree_fast.json"), "json")
+        resolver.load(os.path.join(cwd, "../testdata/tree_fast.pickle"), "pickle")
+        taxids = resolver.search(["9606"])
+        assert len(taxids) == 3

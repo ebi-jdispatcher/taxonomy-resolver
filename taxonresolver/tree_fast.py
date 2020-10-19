@@ -160,7 +160,7 @@ def search_taxids(tree: dict, searchids: list or str,
         taxids_search = searchids
     elif type(searchids) is str:
         taxids_search = parse_tax_ids(searchids)
-    taxids_found = []
+    taxids_found = taxids_search[:]
     for tax_id in taxids_search:
         # list of children
         def get_leaves(taxids: list, tree: dict):

@@ -255,7 +255,7 @@ def search_taxids(tree: Node, searchids: list or str,
         taxids_search = searchids
     elif type(searchids) is str:
         taxids_search = parse_tax_ids(searchids)
-    taxids_found = []
+    taxids_found = taxids_search[:]
     for tax_id in taxids_search:
         for leave in find(tree, filter_=lambda n: n.name == tax_id).leaves:
             nodes = [node.name for node in find(tree, filter_=lambda n: n.name == leave.name).path]
