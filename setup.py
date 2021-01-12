@@ -37,10 +37,6 @@ setup(
     install_requires=DEPENDENCIES,
     test_requires=['pytest', 'python_version>"3.7"'],
 
-    extras_require={
-        'fastcache': ['fastcache>=1.1.0']
-    },
-
     # Tests.
     test_suite='tests',
 
@@ -53,7 +49,7 @@ setup(
     },
     url='https://gitlab.ebi.ac.uk/ebi-biows/taxonomy-resolver',
     download_url="https://gitlab.ebi.ac.uk/ebi-biows/taxonomy-resolver/-/archive/master/taxonomy-resolver-master.zip",
-    keywords='bioinformatics ncbi taxonomy python anytree',
+    keywords='bioinformatics ncbi taxonomy python search validate filter',
     description=('Taxonomy Resolver builds NCBI Taxonomy Trees and lists of '
                  'Taxonomy Identifiers (TaxIDs) based on the NCBI Taxonomy Database.'),
     long_description=open('README.rst').read(),
