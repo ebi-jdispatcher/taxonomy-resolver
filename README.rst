@@ -235,6 +235,10 @@ If you find any bugs or issues please log them in the `issue tracker`_.
 Changelog
 =========
 
+**0.0.6**
+
+- Additional fixes and improvements for missing and invalid TaxIDs
+
 **0.0.5**
 
 - Brought TaxonResolverFast in line with the functionality of TaxonResolver
