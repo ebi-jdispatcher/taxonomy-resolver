@@ -2,9 +2,9 @@
 # -*- coding: utf-8
 
 """
-NCBI Taxonomy Resolver
+Taxonomy Resolver
 
-:copyright: (c) 2020.
+:copyright: (c) 2020-2021.
 :license: Apache 2.0, see LICENSE for more details.
 """
 
