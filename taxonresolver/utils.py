@@ -105,6 +105,7 @@ def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list
     :param indx: index used for splicing the the resulting list
     :return: list of TaxIDs
     """
+
     tax_ids = []
     with open(inputfile, "r") as infile:
         for line in infile:
@@ -121,7 +122,7 @@ def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list
     return tax_ids
 
 
-def get_all_children(node: dict or list, flatten: list) -> list:
+def get_all_children(node: dict or list, flatten: list, taxid: str) -> list:
     """
     Finds all the TaxIDs from a top node in the Taxonomy Tree.
 
@@ -131,10 +132,11 @@ def get_all_children(node: dict or list, flatten: list) -> list:
     """
 
     if isinstance(node, dict):
-        flatten.append(node["id"])
+        if taxid != node["id"]:
+            flatten.append(node["id"])
         if "children" in node.keys():
-            get_all_children(node["children"], flatten)
+            get_all_children(node["children"], flatten, taxid)
     elif isinstance(node, list):
         for d in node:
-            get_all_children(d, flatten)
+            get_all_children(d, flatten, taxid)
     return flatten

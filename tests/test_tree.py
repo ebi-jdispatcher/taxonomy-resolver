@@ -37,8 +37,7 @@ class TestTree:
     def test_resolver_build(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdump.zip"))
-        nodes = resolver.tree
-        assert len(nodes) == 2302938
+        assert len(resolver.tree) == 2302938
 
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -49,8 +48,7 @@ class TestTree:
     def test_resolver_load_pickle(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        nodes = resolver.tree
-        assert len(nodes) == 2302938
+        assert len(resolver.tree) == 2302938
 
     def test_search_by_taxid_human(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -61,16 +59,15 @@ class TestTree:
     def test_resolver_search(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"))
+        assert len(tax_ids) == 533
+
+    def test_resolver_search_filter(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"),
                                   os.path.join(cwd, "../testdata/taxids_filter.txt"))
         assert len(tax_ids) == 302
-
-    def test_resolver_search_alt(self, context, cwd):
-        resolver = TaxonResolver(logging=context)
-        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_filter.txt"),
-                                  os.path.join(cwd, "../testdata/taxids_filter.txt"))
-        assert len(tax_ids) == 593
 
     def test_resolver_validate(self, context, cwd):
         resolver = TaxonResolver(logging=context)

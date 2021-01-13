@@ -22,15 +22,19 @@ from taxonresolver.utils import get_all_children
 
 def tree_reparenting(tree: dict) -> dict:
     """
-    Loops over the Tree dictionary and re-parents every node.
+    Loops over the Tree dictionary and re-parents every node to
+    find all nodes children.
 
     :param tree: dict of node objects
-    :return: updated dict object
+    :return: dict object
     """
+
+    # tree re-parenting
     for node in tree.values():
         if "children" not in tree[node["parent_id"]]:
             tree[node["parent_id"]]["children"] = []
-        tree[node["parent_id"]]["children"].append(tree[node["id"]])
+        if node["id"] != node["parent_id"]:
+            tree[node["parent_id"]]["children"].append(tree[node["id"]])
     return tree
 
 
@@ -42,16 +46,17 @@ def build_tree(inputfile: str) -> dict:
     :param inputfile: Path to inputfile
     :return: dict object
     """
+
     tree = {}
     # read nodes
     with zipfile.ZipFile(inputfile) as taxdmp:
         with taxdmp.open("nodes.dmp") as dmp:
             for line in io.TextIOWrapper(dmp):
-                node = {}
                 fields = split_line(line)
-                node["id"] = fields[0]
-                node["parent_id"] = fields[1]
-                tree[node["id"]] = node
+                tree[fields[0]] = {
+                    "id": fields[0],
+                    "parent_id": fields[1]
+                }
     return tree_reparenting(tree)
 
 
@@ -102,7 +107,7 @@ def search_taxids(tree: dict, searchids: list or str,
     taxids_found = taxids_search[:]
     for taxid in taxids_search:
         if taxid in tree:
-            get_all_children(tree[taxid], taxids_found)
+            get_all_children(tree[taxid], taxids_found, taxid)
 
     taxids_filter = []
     if type(filterids) is list:
