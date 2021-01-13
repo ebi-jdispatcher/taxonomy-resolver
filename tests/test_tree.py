@@ -78,3 +78,46 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"))
+
+    def test_resolver_build_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.build(os.path.join(cwd, "../testdata/nodes_mock.dmp"))
+        assert len(resolver.tree) == 29
+
+    def test_resolver_build_and_write_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.build(os.path.join(cwd, "../testdata/nodes_mock.dmp"))
+        resolver.write(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_mock.pickle"))
+
+    def test_resolver_load_pickle_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        assert len(resolver.tree) == 29
+
+    def test_resolver_search_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        taxids = resolver.search(taxidsearch=["4"])
+        assert len(taxids) == 14
+        taxids = resolver.search(taxidsearch=["5"])
+        assert len(taxids) == 9
+        taxids = resolver.search(taxidsearch=["29"])
+        assert len(taxids) == 1
+
+    def test_resolver_search_filter_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        taxidfilter = ["19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29"]
+        taxids = resolver.search(taxidsearch=["4"], taxidfilter=taxidfilter)
+        assert len(taxids) == 6
+        taxids = resolver.search(taxidsearch=["5"], taxidfilter=taxidfilter)
+        assert len(taxids) == 5
+
+    def test_resolver_validate_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        assert resolver.validate(taxidvalidate=["8"])
+        assert resolver.validate(taxidvalidate=["9"])
+        assert resolver.validate(taxidvalidate=["10"])
+        assert not resolver.validate(taxidvalidate=["9606"])
