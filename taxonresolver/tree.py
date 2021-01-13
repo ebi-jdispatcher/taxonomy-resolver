@@ -49,14 +49,18 @@ def build_tree(inputfile: str) -> dict:
 
     tree = {}
     # read nodes
-    with zipfile.ZipFile(inputfile) as taxdmp:
-        with taxdmp.open("nodes.dmp") as dmp:
-            for line in io.TextIOWrapper(dmp):
-                fields = split_line(line)
-                tree[fields[0]] = {
-                    "id": fields[0],
-                    "parent_id": fields[1]
-                }
+    if zipfile.is_zipfile(inputfile):
+        with zipfile.ZipFile(inputfile) as taxdmp:
+            dmp = taxdmp.open("nodes.dmp")
+    else:
+        dmp = open(inputfile, "rb")
+    for line in io.TextIOWrapper(dmp):
+        fields = split_line(line)
+        tree[fields[0]] = {
+            "id": fields[0],
+            "parent_id": fields[1]
+        }
+    dmp.close()
     return tree_reparenting(tree)
 
 
