@@ -119,18 +119,12 @@ def search_taxids(tree: dict, searchids: list or str,
     return list(set(taxids_found))
 
 
-def validate_taxids(tree: dict, validateids: list or str or None,
-                    filterids: list or str or None = None,
-                    sep: str = None, indx: int = 0) -> bool:
+def validate_taxids(tree: dict, validateids: list or str or None) -> bool:
     """
     Checks if TaxIDs are in the list and in the Tree.
 
     :param tree: dict object
     :param validateids: list of TaxIDs or Path to file with TaxIDs to validate
-    :param filterids: list of TaxIDs or None or Path to inputfile,
-        which is a list of TaxIDs (optional)
-    :param sep: separator for splitting the input file lines
-    :param indx: index used for splicing the the resulting list
     :return: boolean
     """
 
@@ -139,15 +133,9 @@ def validate_taxids(tree: dict, validateids: list or str or None,
     elif type(validateids) is str:
         taxids_validate = parse_tax_ids(validateids)
 
-    taxids_filter = []
-    if type(filterids) is list:
-        taxids_filter = filterids
-    elif type(filterids) is str:
-        taxids_filter = parse_tax_ids(filterids, sep, indx)
-
     taxids_valid = []
     for tax_id in taxids_validate:
-        if tax_id in taxids_filter or tax_id in tree:
+        if tax_id in tree:
             taxids_valid.append(True)
         else:
             taxids_valid.append(False)
@@ -187,13 +175,13 @@ class TaxonResolver(object):
             if self.logging:
                 self.logging(f"Input format '{inputformat}' is not valid!")
 
-    def validate(self, taxidvalidate, taxidfilter=None, **kwargs) -> bool:
+    def validate(self, taxidvalidate) -> bool:
         """Validate a list of TaxIDs against a Tree."""
-        return validate_taxids(self.tree, taxidvalidate, taxidfilter, **kwargs)
+        return validate_taxids(self.tree, taxidvalidate)
 
     def search(self, taxidsearch, taxidfilter=None, **kwargs) -> list or None:
         """Search a Tree based on a list of TaxIDs."""
-        if validate_taxids(self.tree, taxidsearch, taxidfilter):
+        if validate_taxids(self.tree, taxidsearch):
             return search_taxids(self.tree, taxidsearch, taxidfilter, **kwargs)
         else:
             message = ("Some of the provided TaxIDs are not valid or not found "

@@ -72,11 +72,9 @@ class TestTree:
     def test_resolver_validate(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        assert resolver.validate(os.path.join(cwd, "../testdata/taxids_validate.txt"),
-                                 os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert resolver.validate(os.path.join(cwd, "../testdata/taxids_validate.txt"))
 
     def test_resolver_validate_alt(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"),
-                                     os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert not resolver.validate(os.path.join(cwd, "../testdata/taxids_validate_alt.txt"))
