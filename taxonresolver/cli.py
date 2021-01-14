@@ -125,10 +125,12 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
               multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidf', '--taxidfilter', 'taxidfilters', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to filter the Tree.")
+@click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
+              multiple=False, help="Ignores invalid TaxIDs.")
 @add_common(common_options)
 @add_common(common_options_parsing)
 def search(infile: str, outfile: str or None, informat: str,
-           taxid: str or None, taxidsearch: str or None,
+           taxid: str or None, taxidsearch: str or None, ignoreinvalid: bool = False,
            taxidfilters: tuple = None, sep: str = None, indx: int = 0,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Searches a NCBI Taxonomy Tree and writes a list of TaxIDs."""
@@ -162,7 +164,9 @@ def search(infile: str, outfile: str or None, informat: str,
         searchids = taxidsearch
     else:
         searchids = list(set(taxid.split(",")))
-    tax_ids = resolver.search(searchids, list(set(taxidfilterids)))
+    tax_ids = resolver.search(taxidinclude=searchids, taxidexclude=None,
+                              ignoreinvalid=ignoreinvalid,
+                              taxidfilter=list(set(taxidfilterids)))
     if outfile:
         with open(outfile, "w") as outfile:
             outfile.write("\n".join(tax_ids))

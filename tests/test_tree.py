@@ -59,14 +59,14 @@ class TestTree:
     def test_resolver_search(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"))
+        tax_ids = resolver.search(taxidinclude=os.path.join(cwd, "../testdata/taxids_search.txt"))
         assert len(tax_ids) == 533
 
     def test_resolver_search_filter(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
-        tax_ids = resolver.search(os.path.join(cwd, "../testdata/taxids_search.txt"),
-                                  os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        tax_ids = resolver.search(taxidinclude=os.path.join(cwd, "../testdata/taxids_search.txt"),
+                                  taxidfilter=os.path.join(cwd, "../testdata/taxids_filter.txt"))
         assert len(tax_ids) == 302
 
     def test_resolver_validate(self, context, cwd):
@@ -98,21 +98,42 @@ class TestTree:
     def test_resolver_search_mock_tree(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
-        taxids = resolver.search(taxidsearch=["4"])
+        taxids = resolver.search(taxidinclude=["4"])
         assert len(taxids) == 14
-        taxids = resolver.search(taxidsearch=["5"])
+        taxids = resolver.search(taxidinclude=["5"])
         assert len(taxids) == 9
-        taxids = resolver.search(taxidsearch=["29"])
+        taxids = resolver.search(taxidinclude=["29"])
+        assert len(taxids) == 1
+
+    def test_resolver_search_exclude_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        taxids = resolver.search(taxidinclude=["4"], taxidexclude=["24"])
+        assert len(taxids) == 10
+        taxids = resolver.search(taxidinclude=["5"], taxidexclude=["12"])
+        assert len(taxids) == 4
+        taxids = resolver.search(taxidinclude=["29"], taxidexclude=["3"])
         assert len(taxids) == 1
 
     def test_resolver_search_filter_mock_tree(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
         taxidfilter = ["19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29"]
-        taxids = resolver.search(taxidsearch=["4"], taxidfilter=taxidfilter)
+        taxids = resolver.search(taxidinclude=["4"], taxidfilter=taxidfilter)
         assert len(taxids) == 6
-        taxids = resolver.search(taxidsearch=["5"], taxidfilter=taxidfilter)
+        taxids = resolver.search(taxidinclude=["5"], taxidfilter=taxidfilter)
         assert len(taxids) == 5
+
+    def test_resolver_search_exclude_filter_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        taxidfilter = ["19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29"]
+        taxids = resolver.search(taxidinclude=["4"], taxidexclude=["24"],
+                                 taxidfilter=taxidfilter)
+        assert len(taxids) == 2
+        taxids = resolver.search(taxidinclude=["5"], taxidexclude=["12"],
+                                 taxidfilter=taxidfilter)
+        assert len(taxids) == 1
 
     def test_resolver_validate_mock_tree(self, context, cwd):
         resolver = TaxonResolver(logging=context)

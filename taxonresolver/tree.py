@@ -11,7 +11,6 @@ Taxonomy Resolver
 import io
 import pickle
 import zipfile
-import logging
 
 from taxonresolver.utils import parse_tax_ids
 from taxonresolver.utils import print_and_exit
@@ -94,40 +93,74 @@ def load_tree(inputfile: str, inputformat: str = "pickle") -> dict:
         print_and_exit(f"Input format '{inputformat}' is not valid!")
 
 
-def search_taxids(tree: dict, searchids: list or str,
+def search_taxids(tree: dict,
+                  includeids: list or str,
+                  excludeids: list or str or None = None,
                   filterids: list or str or None = None,
+                  ignoreinvalid: bool = False,
                   sep: str = None, indx: int = 0) -> list:
     """
-    Searches an existing Tree and produces a list of TaxIDs.
-    Checks if TaxID is in the list, if so provides as is, else,
-        searches all children in the list that compose that node,
-        (i.e. finds it's leaves)
+    Searches an existing tree dict and produces a list of TaxIDs.
+    Search is performed based on a list of TaxIDs (includedids). A search is also
+    performed on a list of TaxIDs (excludedids), if provided. Those will be
+    removed from the search on the includedids. From this final list of TaxIDs,
+    filterids can used to clean the final set. This could be useful to compress a
+    final list of TaxIDs, to only return those known to exist in another dataset.
 
     :param tree: dict object
-    :param searchids: list of TaxIDs or Path to file with TaxIDs to search with
-    :param filterids: list of TaxIDs or None or Path to inputfile,
-        which is a list of TaxIDs (optional)
+    :param includeids: list of TaxIDs or Path to file with TaxIDs to search with
+    :param excludeids: list of TaxIDs or Path to file with TaxIDs to exclude
+        from the search (optional)
+    :param filterids: list of TaxIDs or Path to file with TaxIDs to filter
+        (i.e. to keep) in the final set of results (optional)
+    :param ignoreinvalid: whether to ignore invalid TaxIDs or not
     :param sep: separator for splitting the input file lines
     :param indx: index used for splicing the the resulting list
     :return: list of TaxIDs
     """
 
-    if type(searchids) is list:
-        taxids_search = searchids
-    elif type(searchids) is str:
-        taxids_search = parse_tax_ids(searchids)
-    taxids_found = taxids_search[:]
-    for taxid in taxids_search:
-        if taxid in tree:
-            get_all_children(tree[taxid], taxids_found, taxid)
+    message = ("Some of the provided TaxIDs are not valid or not found "
+               "in the built Tree.")
 
-    taxids_filter = []
-    if type(filterids) is list:
-        taxids_filter = filterids
-    elif type(filterids) is str:
-        taxids_filter = parse_tax_ids(filterids, sep, indx)
-    if taxids_filter:
-        taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
+    # find all the children nodes of the list of TaxIDs to be included in the search
+    if type(includeids) is list:
+        taxids_include = includeids
+    elif type(includeids) is str:
+        taxids_include = parse_tax_ids(includeids)
+    if ignoreinvalid or validate_taxids(tree, taxids_include):
+        taxids_found = taxids_include[:]
+        for taxid in taxids_include:
+            if taxid in tree:
+                get_all_children(tree[taxid], taxids_found, taxid)
+    else:
+        print_and_exit(message)
+
+    # find all the children nodes of the list of TaxIDs to be excluded from the search
+    if excludeids:
+        if type(excludeids) is list:
+            taxids_exclude = excludeids
+        elif type(excludeids) is str:
+            taxids_exclude = parse_tax_ids(excludeids)
+        if ignoreinvalid or validate_taxids(tree, taxids_exclude):
+            taxids_excluded = taxids_exclude[:]
+            for taxid in taxids_exclude:
+                if taxid in tree:
+                    get_all_children(tree[taxid], taxids_excluded, taxid)
+            taxids_found = [taxid for taxid in taxids_found if taxid not in taxids_excluded]
+        else:
+            print_and_exit(message)
+
+    # keep only TaxIDs that are in the provided list of TaxIDs to filter with
+    if filterids:
+        if type(filterids) is list:
+            taxids_filter = filterids
+        elif type(filterids) is str:
+            taxids_filter = parse_tax_ids(filterids, sep, indx)
+        if ignoreinvalid or validate_taxids(tree, taxids_filter):
+            taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
+        else:
+            print_and_exit(message)
+
     return list(set(taxids_found))
 
 
@@ -181,14 +214,8 @@ class TaxonResolver(object):
         """Validate a list of TaxIDs against a Tree."""
         return validate_taxids(self.tree, taxidvalidate)
 
-    def search(self, taxidsearch, taxidfilter=None, **kwargs) -> list or None:
+    def search(self, taxidinclude, taxidexclude=None, ignoreinvalid=False,
+               taxidfilter=None, **kwargs) -> list or None:
         """Search a Tree based on a list of TaxIDs."""
-        if validate_taxids(self.tree, taxidsearch):
-            return search_taxids(self.tree, taxidsearch, taxidfilter, **kwargs)
-        else:
-            message = ("Some of the provided TaxIDs are not valid or not found "
-                       "in the built Tree.")
-            if self.logging:
-                logging.warning(message)
-            else:
-                print_and_exit(message)
+        return search_taxids(self.tree, taxidinclude, taxidexclude, taxidfilter,
+                             ignoreinvalid, **kwargs)
