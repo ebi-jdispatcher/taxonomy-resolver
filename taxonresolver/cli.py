@@ -50,7 +50,7 @@ common_options_parsing = [
 @click.group(chain=True, context_settings={'help_option_names': ['-h', '--help']})
 @click.version_option(version=__version__)
 def cli():
-    """Taxonomy Resolver: Build NCBI Taxonomy Trees and lists of TaxIDs."""
+    """Taxonomy Resolver: Build a NCBI Taxonomy Tree, validate and search TaxIDs."""
     pass
 
 
@@ -62,7 +62,7 @@ def cli():
 @add_common(common_options)
 def download(outfile: str, outformat: str,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
-    """Download the NCBI Taxonomy dump file."""
+    """Download the NCBI Taxonomy dump file ('taxdmp.zip')."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 
@@ -83,12 +83,12 @@ def download(outfile: str, outformat: str,
               multiple=False, help="Path to output file.")
 @click.option('-inf', '--informat', 'informat', type=str, default=None, required=False,
               multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-outf', '--outformat', 'outformat', type=str, default="pickle", required=True,
+@click.option('-outf', '--outformat', 'outformat', type=str, default="pickle", required=False,
               multiple=False, help="Output format (currently: 'pickle').")
 @add_common(common_options)
 def build(infile: str, outfile: str, informat: str or None, outformat: str,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
-    """Build NCBI Taxonomy Tree in JSON or Pickle."""
+    """Build a NCBI Taxonomy Tree data structure."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 
@@ -116,36 +116,43 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
                                     "(currently: 'pickle')."))
 @click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=False,
               multiple=False, help="Path to output file.")
-@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=True,
+@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=False,
               multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-taxid', '--taxid', 'taxid', is_flag=False, type=str, required=False,
-              multiple=False, help=("Comma-separated TaxIDs. Output to STDOUT by default, "
-                                    "unless an output file is provided."))
-@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=False,
-              multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
-@click.option('-taxidf', '--taxidfilter', 'taxidfilters', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file used to filter the Tree.")
+@click.option('-taxid', '--taxid', 'taxids', is_flag=False, type=str, required=False,
+              multiple=True, help=("Comma-separated TaxIDs or pass multiple values. Output to "
+                                   "STDOUT by default, unless an output file is provided."))
+@click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
+              multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
+@click.option('-taxidse', '--taxidexclude', 'taxidexcludes', type=str, required=False,
+              multiple=True, help="Path to Taxonomy id list file excluded from the search.")
+@click.option('-taxidsf', '--taxidfilter', 'taxidfilter', type=str, required=False,
+              multiple=True, help="Path to Taxonomy id list file used to filter the search.")
 @click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
               multiple=False, help="Ignores invalid TaxIDs.")
 @add_common(common_options)
 @add_common(common_options_parsing)
 def search(infile: str, outfile: str or None, informat: str,
-           taxid: str or None, taxidsearch: str or None, ignoreinvalid: bool = False,
+           taxids: str or None, taxidincludes: str or None,
+           taxidexcludes: str or None, ignoreinvalid: bool = False,
            taxidfilters: tuple = None, sep: str = None, indx: int = 0,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
-    """Searches a NCBI Taxonomy Tree and writes a list of TaxIDs."""
+    """Searches a Tree data structure and writes a list of TaxIDs."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 
     # input options validation
-    if not taxid and not taxidsearch:
+    if not taxids and not taxidincludes:
         print_and_exit(f"TaxIDs need to be provided to execute a search!")
 
     validate_inputs_outputs(inputfile=infile)
     if outfile:
         validate_inputs_outputs(outputfile=outfile)
-    if taxidsearch:
-        validate_inputs_outputs(inputfile=taxidsearch)
+    if taxidincludes:
+        for taxidinclude in taxidincludes:
+            validate_inputs_outputs(inputfile=taxidinclude)
+    if taxidexcludes:
+        for taxidexclude in taxidexcludes:
+            validate_inputs_outputs(inputfile=taxidexclude)
     if taxidfilters:
         for taxidfilter in taxidfilters:
             validate_inputs_outputs(inputfile=taxidfilter)
@@ -155,18 +162,29 @@ def search(infile: str, outfile: str or None, informat: str,
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
-    taxidfilterids = []
+    if taxidincludes:
+        includeids = []
+        for taxidinclude in taxidincludes:
+            includeids.extend(parse_tax_ids(taxidinclude))
+    else:
+        includeids = []
+        for taxid in taxids:
+            includeids.extend(list(set(taxid.split(","))))
+
+    excludeids = []
+    if taxidexcludes:
+        for taxidexclude in taxidexcludes:
+            excludeids.extend(parse_tax_ids(taxidexclude))
+
+    filterids = []
     if taxidfilters:
         for taxidfilter in taxidfilters:
-            taxidfilterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
+            filterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
 
-    if taxidsearch:
-        searchids = taxidsearch
-    else:
-        searchids = list(set(taxid.split(",")))
-    tax_ids = resolver.search(taxidinclude=searchids, taxidexclude=None,
-                              ignoreinvalid=ignoreinvalid,
-                              taxidfilter=list(set(taxidfilterids)))
+    tax_ids = resolver.search(taxidinclude=list(set(includeids)),
+                              taxidexclude=list(set(excludeids)),
+                              taxidfilter=list(set(filterids)),
+                              ignoreinvalid=ignoreinvalid)
     if outfile:
         with open(outfile, "w") as outfile:
             outfile.write("\n".join(tax_ids))
@@ -182,39 +200,45 @@ def search(infile: str, outfile: str or None, informat: str,
 @click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
               multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
                                     "(currently: 'pickle')."))
-@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=True,
+@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=False,
               multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-taxid', '--taxid', 'taxid', is_flag=False, type=str, required=False,
-              multiple=False, help="Comma-separated TaxIDs. Output to STDOUT by default.")
-@click.option('-taxids', '--taxidsearch', 'taxidsearch', type=str, required=False,
-              multiple=False, help="Path to Taxonomy id list file used to search the Tree.")
+@click.option('-taxid', '--taxid', 'taxids', is_flag=False, type=str, required=False,
+              multiple=True, help="Comma-separated TaxIDs or pass multiple values. Output to "
+                                   "STDOUT by default.")
+@click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
+              multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
 @add_common(common_options)
 def validate(infile: str, informat: str,
-             taxid: str or None, taxidsearch: str or None,
+             taxids: str or None, taxidincludes: str or None,
              log_level: str = "INFO", log_output: str = None, quiet: bool = False):
-    """Validates a list of TaxIDs against a NCBI Taxonomy Tree."""
+    """Validates a list of TaxIDs against a Tree data structure."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 
     # input options validation
-    if not taxid and not taxidsearch:
+    if not taxids and not taxidincludes:
         print_and_exit(f"TaxIDs need to be provided to execute a search!")
 
     validate_inputs_outputs(inputfile=infile)
-    if taxidsearch:
-        validate_inputs_outputs(inputfile=taxidsearch)
+    if taxidincludes:
+        for taxidinclude in taxidincludes:
+            validate_inputs_outputs(inputfile=taxidinclude)
     logging.info("Validated inputs.")
 
     resolver = TaxonResolver(logging)
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
-    if taxidsearch:
-        searchids = taxidsearch
+    if taxidincludes:
+        includeids = []
+        for taxidinclude in taxidincludes:
+            includeids.extend(parse_tax_ids(taxidinclude))
     else:
-        searchids = list(set(taxid.split(",")))
-    valid = resolver.validate(searchids)
-    logging.info(f"Validated TaxIDs from '{taxidsearch}' in the '{infile}' tree.")
+        includeids = []
+        for taxid in taxids:
+            includeids.extend(list(set(taxid.split(","))))
+    valid = resolver.validate(taxidinclude=list(set(includeids)))
+    logging.info(f"Validated TaxIDs in the '{infile}' tree.")
     print_and_exit(str(valid))
 
 

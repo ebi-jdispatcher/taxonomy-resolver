@@ -210,12 +210,12 @@ class TaxonResolver(object):
         """Load a tree from a Pickle file."""
         self.tree = load_tree(inputfile, inputformat)
 
-    def validate(self, taxidvalidate) -> bool:
+    def validate(self, taxidinclude) -> bool:
         """Validate a list of TaxIDs against a Tree."""
-        return validate_taxids(self.tree, taxidvalidate)
+        return validate_taxids(self.tree, taxidinclude)
 
-    def search(self, taxidinclude, taxidexclude=None, ignoreinvalid=False,
-               taxidfilter=None, **kwargs) -> list or None:
+    def search(self, taxidinclude, taxidexclude=None, taxidfilter=None,
+               ignoreinvalid=False, **kwargs) -> list or None:
         """Search a Tree based on a list of TaxIDs."""
         return search_taxids(self.tree, taxidinclude, taxidexclude, taxidfilter,
                              ignoreinvalid, **kwargs)
