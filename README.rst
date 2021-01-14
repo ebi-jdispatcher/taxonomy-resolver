@@ -2,18 +2,17 @@
 Taxonomy Resolver
 #################
 
-Taxonomy Resolver builds NCBI Taxonomy Trees and lists of Taxonomy Identifiers (TaxIDs)
-based on the `NCBI Taxonomy`_ Database.
+Taxonomy Resolver builds a NCBI Taxonomy Tree structure based on the `NCBI Taxonomy`_ Database classification. Taxonomy Resolver can be used to validate Taxonomy Identifiers (TaxIDs) against the Tree or to generate lists of TaxIDs, based on some TaxID of interest (e.g. higher level rank (node) in the tree).
 
 Main features of Taxonomy Resolver are:
 
 1. Downloading taxonomy dump files from the `NCBI ftp server`_
-2. Building NCBI Taxonomy Trees (with `anytree`_)
-3. Writing out the Tree in ``json`` or ``pickle`` formats
-4. Filtering the Tree based on a list of TaxIDs
-5. Quick lookup to see if a TaxID exists in the Tree
-6. Generate lists of all children TaxIDs that compose a particular Node
-
+2. Building a NCBI Taxonomy Tree data structure based on the NCBI Taxonomy classification
+3. Writing and loading the Tree structure in ``pickle`` format
+4. Quick lookup to see if a TaxID exists in the Tree (i.e. is valid)
+5. Generate lists of all children TaxIDs that compose a particular Node
+6. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs
+7. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs which are not observed in a dataset of interest
 
 ------------
 
@@ -24,14 +23,12 @@ Main features of Taxonomy Resolver are:
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.7+ (recommended version 3.8). Additional requirements, which will be
-downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
+Installation requires `Python`_ 3.7+ (recommended version 3.8). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
 ------------------
 
-Dependencies for the Python tools developed here, are the typical Python stack (3.6+ and pip).
-A good approach is to set a virtual environment:
+Dependencies for the Python tools developed here, are the typical Python stack (3.6+ and pip). A good approach is to set a virtual environment:
 
 .. code-block:: bash
 
@@ -79,22 +76,16 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
   dumpfile = "taxdmp.zip"
   resolver.download(dumpfile, "zip")
 
-  # Building the NCBI Taxonomy Tree (can take several minutes to build)
+  # Building the NCBI Taxonomy Tree data structure
   resolver.build(dumpfile)
-  # the resolver.tree can be saved to file at this stage with `resolver.write()`
 
-  # Filtering the Tree based on a set of local TaxIDs (species-level)
-  # A minimal Tree is constructed that covers (hierarchically) all TaxIDs provided
-  filterfile = "taxids_filter.txt"
-  resolver.filter(filterfile)
+  # Saving the Tree data structure as Pickle format
+  treefile = "tree.pickle"
+  resolver.write(treefile, "pickle")
 
-  # Saving the filtered Tree as JSON format
-  treefile = "tree_filtered.json"
-  resolver.write(treefile, "json")
-
-  # Get a list of TaxIDs (species-level) that compose a set of TaxIDs
+  # Get a list of children TaxIDs that compose a set of TaxIDs
   searchfile = "taxids_search.txt"
-  tax_ids = resolver.search(searchfile, filterfile) # the filterfile is optional
+  tax_ids = resolver.search(searchfile)
   # Write the TaxIDs to a file
   taxidsfile = "taxids_list.txt"
   with open(outfile, "w") as outfile:
@@ -113,50 +104,11 @@ When a Taxonomy Tree is already available one can simply load it with ``resolver
   treefile = "tree.pickle"
   resolver.load(treefile, "pickle")
 
-  # Filtering the Tree based on a set of local TaxIDs (species-level)
-  filterfile = "taxids_filter.txt"
-  resolver.filter(filterfile)
-
-  # Validate a set of TaxIDs against the Tree and against a list of TaxIDs (species-level)
+  # Validate a set of TaxIDs against the Tree data structure
   validatefile = "taxids_validate.txt"
-  valid = resolver.validate(validatefile, filterfile) # the filterfile is optional
+  valid = resolver.validate(validatefile)
   if valid:
     print(f"TaxIDs in {validatefile} are valid!")
-
-
-Because each node in Taxonomy Resolver is an `anytree`_ node, all anytree features are available,
-including Tree ``Rendering``, ``Iteration``, ``Searching``, etc. See `anytree's documentation`_ for more information on what is possible.
-
-.. code-block:: python
-
-  from taxonresolver import TaxonResolver
-  from anytree.search import find_by_attr, findall_by_attr
-
-  resolver = TaxonResolver()
-
-  # Loading the NCBI Taxonomy Tree
-  treefile = "tree.pickle"
-  resolver.load(treefile, "pickle")
-
-  # Tree is a dictionary of anytree Nodes
-  tree = resolver.tree
-
-  # Display the path of particular node
-  # ( "9606" is the TaxID of species 'homo sapiens')
-  find_by_attr(tree, "9606")
-  # Node('/1/131567/(...)/9606', parentTaxId='9605', rank='species', taxonName='Homo sapiens')
-  # Display the parent node
-  find_by_attr(tree, "9606").parent
-  # Node('/1/131567/(...)/9605', parentTaxId='207598', rank='genus', taxonName='Homo')
-  # ( "40674" is the TaxID of class 'Mammalia')
-  find_by_attr(tree, "40674")
-  # Node('/1/131567/.../40674', parentTaxId='32524', rank='class', taxonName='Mammalia')
-
-  # Iterate over all Nodes that compose a particular TaxID
-  from anytree.iterators import LevelOrderIter
-  # ( "9443" is the TaxID of order 'Primates')
-  [node.name for node in LevelOrderIter(findall_by_attr(tree, "9443")) if node.rank == "species"]
-  # [..., ..., ...]
 
 CLI
 ---
@@ -170,18 +122,17 @@ Explore the CLI and each command by running
   Usage: taxonomy_resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
                               [ARGS]...]...
 
-    Taxonomy Resolver: Build NCBI Taxonomy Trees and lists of TaxIDs.
+    Taxonomy Resolver: Build a NCBI Taxonomy Tree, validate and search TaxIDs.
 
   Options:
     --version   Show the version and exit.
     -h, --help  Show this message and exit.
 
   Commands:
-    build     Build NCBI Taxonomy Tree in JSON or Pickle.
-    download  Download the NCBI Taxonomy dump file.
-    search    Searches a NCBI Taxonomy Tree and writes a list of TaxIDs.
-    validate  Validates a list of TaxIDs against a NCBI Taxonomy Tree.
-
+    build     Build a NCBI Taxonomy Tree data structure.
+    download  Download the NCBI Taxonomy dump file ('taxdmp.zip').
+    search    Searches a Tree data structure and writes a list of TaxIDs.
+    validate  Validates a list of TaxIDs against a Tree data structure.
 
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
@@ -195,36 +146,27 @@ Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in taxdmp.zip -out tree.json -outf json
+  python taxonomy-resolver.py build -in taxdmp.zip -out tree.pickle
 
 
-Loading a built Tree structure in JSON and saving it in ``pickle`` format:
-
-.. code-block:: bash
-
-  python taxonomy-resolver.py build -in tree.json -inf json -out tree.pickle -outf pickle
-
-
-Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
+Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf taxids_filter.txt
+  python taxonomy-resolver.py search -in tree.pickle -taxids taxids_search.txt
 
-
-Generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs passed to search
-a filtered Tree in ``pickle`` format:
+Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs (included TaxIDs), exclude TaxIDs from the search (excluded TaxIDs), and filter the final result to only those TaxIDs that are available in the list of filter TaxIDs (filtered TaxIDs):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree_filtered.pickle -inf pickle -taxids taxids_search.txt -taxidf taxids_filter.txt -out taxids_list.txt
+  python taxonomy-resolver.py search -in tree.pickle -taxids taxids_search.txt -taxidse taxids_exclude.txt -taxidsf taxids_filter.txt -out taxids_list.txt
 
 
-Validating a list of TaxIDs against a full (or filtered) Tree in ``pickle`` format:
+Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py validate -in tree.pickle -inf pickle -taxids taxids_search.txt
+  python taxonomy-resolver.py validate -in tree.pickle -taxids taxids_search.txt
 
 
 Bug Tracking
@@ -255,6 +197,4 @@ Apache License 2.0. See `license`_ for details.
 .. _Python: https://www.python.org/
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
-.. _anytree: https://github.com/c0fec0de/anytree
-.. _anytree's documentation: https://anytree.readthedocs.io/
 .. _CHANGELOG.rst: CHANGELOG.rst
