@@ -45,7 +45,7 @@ Download the source code or clone the repository, then simply run:
 
 .. code-block:: bash
 
-  python setup.py
+  python setup.py install
 
 ``Taxonomy Resolver`` module will be available within your environment.
 
@@ -153,20 +153,20 @@ Load a previously built Tree data structure in ``pickle`` format and generating 
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids taxids_search.txt
+  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs (included TaxIDs), exclude TaxIDs from the search (excluded TaxIDs), and filter the final result to only those TaxIDs that are available in the list of filter TaxIDs (filtered TaxIDs):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids taxids_search.txt -taxidse taxids_exclude.txt -taxidsf taxids_filter.txt -out taxids_list.txt
+  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt -taxidse testdata/taxids_exclude.txt -taxidsf testdata/taxids_filter.txt -out taxids_list.txt
 
 
 Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py validate -in tree.pickle -taxids taxids_search.txt
+  python taxonomy-resolver.py validate -in tree.pickle -taxids testdata/taxids_validate.txt
 
 
 Bug Tracking

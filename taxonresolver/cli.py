@@ -125,7 +125,7 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
               multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
 @click.option('-taxidse', '--taxidexclude', 'taxidexcludes', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file excluded from the search.")
-@click.option('-taxidsf', '--taxidfilter', 'taxidfilter', type=str, required=False,
+@click.option('-taxidsf', '--taxidfilter', 'taxidfilters', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to filter the search.")
 @click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
               multiple=False, help="Ignores invalid TaxIDs.")
@@ -188,12 +188,12 @@ def search(infile: str, outfile: str or None, informat: str,
     if outfile:
         with open(outfile, "w") as outfile:
             outfile.write("\n".join(tax_ids))
+        logging.info(f"Wrote list of TaxIDS in {outfile}.")
     else:
         try:
             print(",".join(tax_ids))
         except TypeError:
             print(tax_ids)
-    logging.info(f"Wrote list of TaxIDS in {outfile}.")
 
 
 @cli.command("validate")
