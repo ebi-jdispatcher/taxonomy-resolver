@@ -23,7 +23,7 @@ from taxonresolver.utils import get_all_children
 def tree_reparenting(tree: dict) -> dict:
     """
     Loops over the Tree dictionary and re-parents every node to
-    find all nodes children.
+    find all the node's children.
 
     :param tree: dict of node objects
     :return: dict object
@@ -40,8 +40,8 @@ def tree_reparenting(tree: dict) -> dict:
 
 def build_tree(inputfile: str) -> dict:
     """
-    Given the path to NCBI Taxonomy 'taxdump.zip' file,
-    builds a slim tree data structure.
+    Given the path to NCBI Taxonomy 'taxdmp.zip' file or simply a
+    'nodes.dmp' file, builds a slim tree data structure.
 
     :param inputfile: Path to inputfile
     :return: dict object
@@ -64,26 +64,34 @@ def build_tree(inputfile: str) -> dict:
     return tree_reparenting(tree)
 
 
-def write_tree(tree: dict, outputfile: str) -> None:
+def write_tree(tree: dict, outputfile: str, outputformat: str = "pickle") -> None:
     """
-    Writes a Tree object to file.
+    Writes a tree dict object to file.
 
     :param tree: dict object
     :param outputfile: Path to outputfile
+    :param outputformat: currently "pickle" format
     :return: (side-effects) writes to file
     """
-    with open(outputfile, 'wb') as outfile:
-        pickle.dump(tree, outfile)
+    if outputformat == "pickle":
+        with open(outputfile, 'wb') as outfile:
+            pickle.dump(tree, outfile)
+    else:
+        print_and_exit(f"Input format '{outputformat}' is not valid!")
 
 
-def load_tree(inputfile: str) -> dict:
+def load_tree(inputfile: str, inputformat: str = "pickle") -> dict:
     """
-    Loads a pre-existing Tree from file.
+    Loads a pre-existing tree dict from file.
 
     :param inputfile: Path to outputfile
+    :param inputformat: currently "pickle" format
     :return: dict object
     """
-    return pickle.load(open(inputfile, "rb"))
+    if inputformat == "pickle":
+        return pickle.load(open(inputfile, "rb"))
+    else:
+        print_and_exit(f"Input format '{inputformat}' is not valid!")
 
 
 def search_taxids(tree: dict, searchids: list or str,
@@ -123,7 +131,7 @@ def search_taxids(tree: dict, searchids: list or str,
     return list(set(taxids_found))
 
 
-def validate_taxids(tree: dict, validateids: list or str or None) -> bool:
+def validate_taxids(tree: dict, validateids: list or str) -> bool:
     """
     Checks if TaxIDs are in the list and in the Tree.
 
@@ -163,21 +171,11 @@ class TaxonResolver(object):
 
     def write(self, outputfile, outputformat) -> None:
         """Write a tree object in Pickle format."""
-        outputformat = outputformat.lower()
-        if outputformat == "pickle":
-            write_tree(self.tree, outputfile)
-        else:
-            if self.logging:
-                self.logging(f"Output format '{outputformat}' is not valid!")
+        write_tree(self.tree, outputfile, outputformat)
 
     def load(self, inputfile, inputformat) -> None:
         """Load a tree from a Pickle file."""
-        inputformat = inputformat.lower()
-        if inputformat == "pickle":
-            self.tree = load_tree(inputfile)
-        else:
-            if self.logging:
-                self.logging(f"Input format '{inputformat}' is not valid!")
+        self.tree = load_tree(inputfile, inputformat)
 
     def validate(self, taxidvalidate) -> bool:
         """Validate a list of TaxIDs against a Tree."""
