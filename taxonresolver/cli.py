@@ -123,6 +123,8 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
                                    "STDOUT by default, unless an output file is provided."))
 @click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
+@click.option('-taxidexc', '--taxidexc', 'taxidsexcludes', is_flag=False, type=str, required=False,
+              multiple=True, help="Comma-separated TaxIDs or pass multiple values.")
 @click.option('-taxidse', '--taxidexclude', 'taxidexcludes', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file excluded from the search.")
 @click.option('-taxidsf', '--taxidfilter', 'taxidfilters', type=str, required=False,
@@ -133,8 +135,8 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 @add_common(common_options_parsing)
 def search(infile: str, outfile: str or None, informat: str,
            taxids: str or None, taxidincludes: str or None,
-           taxidexcludes: str or None, ignoreinvalid: bool = False,
-           taxidfilters: tuple = None, sep: str = None, indx: int = 0,
+           taxidsexcludes: str or None, taxidexcludes: str or None, taxidfilters: tuple = None,
+           ignoreinvalid: bool = False, sep: str = None, indx: int = 0,
            log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Searches a Tree data structure and writes a list of TaxIDs."""
 
@@ -162,12 +164,11 @@ def search(infile: str, outfile: str or None, informat: str,
     resolver.load(infile, informat)
     logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
 
+    includeids = []
     if taxidincludes:
-        includeids = []
         for taxidinclude in taxidincludes:
             includeids.extend(parse_tax_ids(taxidinclude))
     else:
-        includeids = []
         for taxid in taxids:
             includeids.extend(list(set(taxid.split(","))))
 
@@ -175,6 +176,9 @@ def search(infile: str, outfile: str or None, informat: str,
     if taxidexcludes:
         for taxidexclude in taxidexcludes:
             excludeids.extend(parse_tax_ids(taxidexclude))
+    elif taxidsexcludes:
+        for taxid in taxidsexcludes:
+            includeids.extend(list(set(taxid.split(","))))
 
     filterids = []
     if taxidfilters:
