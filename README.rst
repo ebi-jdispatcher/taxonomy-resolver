@@ -76,7 +76,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
   resolver = TaxonResolver()
 
   # Download the NCBI Taxonomy Data Dump
-  dumpfile = "taxdump.zip"
+  dumpfile = "taxdmp.zip"
   resolver.download(dumpfile, "zip")
 
   # Building the NCBI Taxonomy Tree (can take several minutes to build)
@@ -188,14 +188,14 @@ Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py download -out taxdump.zip
+  python taxonomy-resolver.py download -out taxdmp.zip
 
 
-Building a Tree structure from the ``taxdump.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
+Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in taxdump.zip -out tree.json -outf json
+  python taxonomy-resolver.py build -in taxdmp.zip -out tree.json -outf json
 
 
 Loading a built Tree structure in JSON and saving it in ``pickle`` format:

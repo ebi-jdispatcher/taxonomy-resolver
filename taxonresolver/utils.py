@@ -81,7 +81,7 @@ def download_taxonomy_dump(outfile, extension="zip") -> None:
     if extension == "zip":
         url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip"
     else:
-        url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz"
+        url = "http://ftp.ebi.ac.uk/pub/databases/ncbi/taxonomy/taxdmp.zip"
     r = requests.get(url, allow_redirects=True)
     if r.ok:
         open(outfile, 'wb').write(r.content)
