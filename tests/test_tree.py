@@ -69,6 +69,14 @@ class TestTree:
                                   taxidfilter=os.path.join(cwd, "../testdata/taxids_filter.txt"))
         assert len(tax_ids) == 302
 
+    def test_resolver_search_exclude_filter(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        tax_ids = resolver.search(taxidinclude=os.path.join(cwd, "../testdata/taxids_search.txt"),
+                                  taxidexclude=os.path.join(cwd, "../testdata/taxids_exclude.txt"),
+                                  taxidfilter=os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert len(tax_ids) == 296
+
     def test_resolver_validate(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
