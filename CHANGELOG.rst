@@ -1,3 +1,15 @@
+**0.1.0**
+
+- Removed the "Any Python Tree" `anytree` dependency
+- Large refactoring and rewrite of the `TaxonResolver` class
+- Removed `TaxonResolverFast` and `fast` mode
+- New test cases based on a mock tree `testdata/nodes_mock.dmp`
+- Simplified usage of the class and CLI
+- Only currently working with `pickle` format for writing and loading
+- Searching takes included, excluded and filter lists of TaxIDs
+- Validation only takes included TaxIDs
+- CLI `search` and `validate` can take multiple TaxIDs at once
+
 **0.0.6**
 
 - Additional fixes and improvements for missing and invalid TaxIDs
