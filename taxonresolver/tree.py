@@ -76,7 +76,7 @@ def write_tree(tree: dict, outputfile: str, outputformat: str = "pickle") -> Non
         with open(outputfile, 'wb') as outfile:
             pickle.dump(tree, outfile)
     else:
-        print_and_exit(f"Input format '{outputformat}' is not valid!")
+        print_and_exit(f"Output format '{outputformat}' is not valid!")
 
 
 def load_tree(inputfile: str, inputformat: str = "pickle") -> dict:
@@ -193,7 +193,7 @@ class TaxonResolver(object):
         self.logging = logging
         self.kwargs = kwargs
 
-    def download(self, outputfile, outputformat) -> None:
+    def download(self, outputfile, outputformat="zip") -> None:
         """Download the NCBI Taxonomy dump file."""
         outputformat = outputformat.lower()
         download_taxonomy_dump(outputfile, outputformat)
@@ -202,11 +202,11 @@ class TaxonResolver(object):
         """Build a tree object from the NCBI Taxonomy dump file."""
         self.tree = build_tree(inputfile)
 
-    def write(self, outputfile, outputformat) -> None:
+    def write(self, outputfile, outputformat="pickle") -> None:
         """Write a tree object in Pickle format."""
         write_tree(self.tree, outputfile, outputformat)
 
-    def load(self, inputfile, inputformat) -> None:
+    def load(self, inputfile, inputformat="pickle") -> None:
         """Load a tree from a Pickle file."""
         self.tree = load_tree(inputfile, inputformat)
 

@@ -50,7 +50,7 @@ class TestTree:
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         assert len(resolver.tree) == 2302938
 
-    def test_resoilver_search_by_taxid_human(self, context, cwd):
+    def test_resolver_search_by_taxid_human(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["9606"])
