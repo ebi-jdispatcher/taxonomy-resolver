@@ -143,7 +143,7 @@ def search(infile: str, outfile: str or None, informat: str,
     logging = load_logging(log_level, log_output, disabled=quiet)
 
     # input options validation
-    if not taxids and not taxidincludes and not taxidsexcludes and not taxidexcludes:
+    if not taxids and not taxidincludes:
         print_and_exit(f"TaxIDs need to be provided to execute a search!")
 
     validate_inputs_outputs(inputfile=infile)
