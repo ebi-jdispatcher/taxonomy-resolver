@@ -2,17 +2,17 @@
 Taxonomy Resolver
 #################
 
-Taxonomy Resolver builds a NCBI Taxonomy Tree structure based on the `NCBI Taxonomy`_ Database classification. Taxonomy Resolver can be used to validate Taxonomy Identifiers (TaxIDs) against the Tree or to generate lists of TaxIDs, based on some TaxID of interest (e.g. higher level rank (node) in the tree).
+Taxonomy Resolver builds an NCBI Taxonomy Tree structure based on the `NCBI Taxonomy`_ Database classification. Taxonomy Resolver can be used to validate Taxonomy Identifiers (TaxIDs) against the Tree or to generate lists of TaxIDs, based on some TaxID of interest (e.g. higher-level rank (node) in the tree).
 
-Main features of Taxonomy Resolver are:
+The main features of Taxonomy Resolver are:
 
 1. Downloading taxonomy dump files from the `NCBI ftp server`_
-2. Building a NCBI Taxonomy Tree data structure based on the NCBI Taxonomy classification
+2. Building an NCBI Taxonomy Tree data structure based on the NCBI Taxonomy classification
 3. Writing and loading the Tree structure in ``pickle`` format
 4. Quick lookup to see if a TaxID exists in the Tree (i.e. is valid)
 5. Generate lists of all children TaxIDs that compose a particular Node
 6. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs
-7. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs which are not observed in a dataset of interest
+7. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs that are not observed in a dataset of interest
 
 ------------
 
@@ -23,12 +23,12 @@ Main features of Taxonomy Resolver are:
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.7+ (recommended version 3.8). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
+Installation requires `Python`_ 3.7+ (recommended version 3.9). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
 ------------------
 
-Dependencies for the Python tools developed here, are the typical Python stack (3.6+ and pip). A good approach is to set a virtual environment:
+Dependencies for the Python tools developed here, are the typical Python stack (3.7+ and pip). A good approach is to set a virtual environment:
 
 .. code-block:: bash
 
@@ -59,7 +59,7 @@ Download the source code or clone the repository, then simply run:
 Getting Started
 ===============
 
-Taxonomy Resolver can be used as Python module or via the CLI provided.
+Taxonomy Resolver can be used as a Python module or via the CLI provided.
 
 Module
 ------
