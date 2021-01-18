@@ -178,7 +178,7 @@ def search(infile: str, outfile: str or None, informat: str,
             excludeids.extend(parse_tax_ids(taxidexclude))
     elif taxidsexcludes:
         for taxid in taxidsexcludes:
-            includeids.extend(list(set(taxid.split(","))))
+            excludeids.extend(list(set(taxid.split(","))))
 
     filterids = []
     if taxidfilters:
