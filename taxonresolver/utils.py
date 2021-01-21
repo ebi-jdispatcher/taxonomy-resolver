@@ -106,7 +106,7 @@ def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list
     :return: list of TaxIDs
     """
 
-    tax_ids = []
+    taxids = []
     with open(inputfile, "r") as infile:
         for line in infile:
             if line.startswith("#"):
@@ -114,12 +114,12 @@ def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list
             line = line.rstrip()
             if line != "":
                 if sep:
-                    tax_id = line.split(sep)[indx]
+                    taxid = line.split(sep)[indx]
                 else:
-                    tax_id = line.split()[indx]
-                if tax_id != "":
-                    tax_ids.append(tax_id)
-    return tax_ids
+                    taxid = line.split()[indx]
+                if taxid != "":
+                    taxids.append(taxid)
+    return taxids
 
 
 def tree_reparenting(tree: dict) -> dict:

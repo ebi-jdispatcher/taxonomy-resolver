@@ -172,7 +172,7 @@ def search_taxids(tree: pd.DataFrame,
         elif type(filterids) is str:
             taxids_filter = parse_tax_ids(filterids, sep, indx)
         if ignoreinvalid or validate_taxids(tree, taxids_filter):
-            taxids_found = [tax_id for tax_id in taxids_found if tax_id in taxids_filter]
+            taxids_found = [taxid for taxid in taxids_found if taxid in taxids_filter]
         else:
             print_and_exit(message)
 
