@@ -10,9 +10,82 @@ The main features of Taxonomy Resolver are:
 2. Building an NCBI Taxonomy Tree data structure based on the NCBI Taxonomy classification
 3. Writing and loading the Tree structure in ``pickle`` format
 4. Quick lookup to see if a TaxID exists in the Tree (i.e. is valid)
-5. Generate lists of all children TaxIDs that compose a particular Node
-6. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs
+5. Generate lists of all children TaxIDs that compose a particular Node (sub-tree)
+6. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs (included and excluded sub-trees)
 7. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs that are not observed in a dataset of interest
+
+Taxonomy Resolver initially builds a tree structure based on recursively assigning the children nodes of a particular node. To retrieve a full tree or sub-tree, a lot of iteration takes place, to follow the path from the node of interest down the hierarchy. This approach does not perform well, especially for large trees. Thus, in Taxonomy Resolver, the tree is then represented following a different approach, commonly referred to as the Nested Set Model. In the Nested Set Model, we can look at a tree hierarchy differently, not as connected nodes, but as nested containers. The nested set model is a particular technique for representing nested sets in relational databases, i.e. which we implement here in a pandas ``DataFrame``. For that, the full tree is traversed with Modified Preorder Tree Traversal strategy. In a preorder traversal, the root node is visited first, then recursively do a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order until every node has been visited. The modified strategy allows us to capture the 'left' and 'right' (``lft`` and ``rgt``, respectively) boundaries of each nested container
+Querying and searching is much faster with this approach because finding a subtree is as simple as filtering/searching for the nodes where ``lft > Node's lft`` and ``rgt < Node's rgt``.
+
+Both traversal markup (left and right), depth and node indexes are captured for each node in the tree. The following Taxonomy Tree is used as a mock test case - see `nodes_mock.dmp`_:
+
+.. image:: testdata/mock_tree_diagram.png
+  :width: 700px
+
+The resulting tree can be represented in tabular form:
+
++-------+--------+-----------+--------+-------+-----+-----+
+| index | tax_id | parent_id | rank   | depth | lft | rgt |
++=======+========+===========+========+=======+=====+=====+
+| 1     | 1      | 1         | root   | 1     | 1   | 58  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 2     | 2      | 1         | rank 2 | 2     | 2   | 57  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 3     | 3      | 2         | rank 3 | 3     | 3   | 28  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 4     | 5      | 3         | rank 4 | 4     | 4   | 21  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 5     | 10     | 5         | rank 5 | 5     | 5   | 8   |
++-------+--------+-----------+--------+-------+-----+-----+
+| 6     | 19     | 10        | rank 6 | 6     | 6   | 7   |
++-------+--------+-----------+--------+-------+-----+-----+
+| 7     | 11     | 5         | rank 5 | 5     | 9   | 10  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 8     | 12     | 5         | rank 5 | 5     | 11  | 20  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 9     | 20     | 12        | rank 6 | 6     | 12  | 13  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 10    | 21     | 12        | rank 6 | 6     | 14  | 19  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 11    | 25     | 21        | rank 7 | 7     | 15  | 16  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 12    | 26     | 21        | rank 7 | 7     | 17  | 18  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 13    | 6      | 3         | rank 4 | 4     | 22  | 23  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 14    | 7      | 3         | rank 4 | 4     | 24  | 27  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 15    | 13     | 7         | rank 5 | 5     | 25  | 26  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 16    | 4      | 2         | rank 3 | 3     | 29  | 56  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 17    | 8      | 4         | rank 4 | 4     | 30  | 39  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 18    | 14     | 8         | rank 5 | 5     | 31  | 36  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 19    | 22     | 14        | rank 6 | 6     | 32  | 33  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 20    | 23     | 14        | rank 6 | 6     | 34  | 35  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 21    | 15     | 8         | rank 5 | 5     | 37  | 38  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 22    | 9      | 4         | rank 4 | 4     | 40  | 55  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 23    | 16     | 9         | rank 5 | 5     | 41  | 42  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 24    | 17     | 9         | rank 5 | 5     | 43  | 44  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 25    | 18     | 9         | rank 5 | 5     | 45  | 54  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 26    | 24     | 18        | rank 6 | 6     | 46  | 53  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 27    | 27     | 24        | rank 7 | 7     | 47  | 52  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 28    | 28     | 27        | rank 8 | 8     | 48  | 49  |
++-------+--------+-----------+--------+-------+-----+-----+
+| 29    | 29     | 27        | rank 8 | 8     | 50  | 51  |
++-------+--------+-----------+--------+-------+-----+-----+
+
 
 ------------
 
@@ -198,3 +271,4 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _CHANGELOG.rst: CHANGELOG.rst
+.. _nodes_mock.dmp: testdata/nodes_mock.dmp
