@@ -56,6 +56,60 @@ class TestTree:
         taxids = resolver.search(["9606"])
         assert len(taxids) == 3
 
+    def test_resolver_search_by_taxid_bacteria(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["2"])
+        assert len(taxids) == 517912
+
+    def test_resolver_search_by_taxid_archaea(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["2157"])
+        assert len(taxids) == 13683
+
+    def test_resolver_search_by_taxid_eukaryota(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["2759"])
+        assert len(taxids) == 1541629
+
+    def test_resolver_search_by_taxid_viruses(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["10239"])
+        assert len(taxids) == 212409
+
+    def test_resolver_search_by_taxid_other(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["28384"])
+        assert len(taxids) == 16313
+
+    def test_resolver_search_by_taxid_unclassified(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["12908"])
+        assert len(taxids) == 988
+
+    def test_resolver_search_by_taxid_mammalia(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["40674"])
+        assert len(taxids) == 12449
+
+    def test_resolver_search_by_taxid_primates(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["9443"])
+        assert len(taxids) == 1002
+
+    def test_resolver_search_by_taxid_plants(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        taxids = resolver.search(["3193"])
+        assert len(taxids) == 216142
+
     def test_resolver_search(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
