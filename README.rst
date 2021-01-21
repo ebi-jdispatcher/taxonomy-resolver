@@ -19,8 +19,7 @@ Querying and searching is much faster with this approach because finding a subtr
 
 Both traversal markup (left and right), depth and node indexes are captured for each node in the tree. The following Taxonomy Tree is used as a mock test case - see `nodes_mock.dmp`_:
 
-.. image:: testdata/mock_tree_diagram.png
-  :width: 700px
+.. image:: testdata/mock_tree_diagram_50.png
 
 The resulting tree can be represented in tabular form:
 
