@@ -9,35 +9,18 @@ Taxonomy Resolver
 """
 
 import io
-import pickle
 import zipfile
+import pandas as pd
 
 from taxonresolver.utils import parse_tax_ids
 from taxonresolver.utils import print_and_exit
 from taxonresolver.utils import split_line
 from taxonresolver.utils import download_taxonomy_dump
-from taxonresolver.utils import get_all_children
+from taxonresolver.utils import tree_reparenting
+from taxonresolver.utils import tree_traversal
 
 
-def tree_reparenting(tree: dict) -> dict:
-    """
-    Loops over the Tree dictionary and re-parents every node to
-    find all the node's children.
-
-    :param tree: dict of node objects
-    :return: dict object
-    """
-
-    # tree re-parenting
-    for node in tree.values():
-        if "children" not in tree[node["parent_id"]]:
-            tree[node["parent_id"]]["children"] = []
-        if node["id"] != node["parent_id"]:
-            tree[node["parent_id"]]["children"].append(tree[node["id"]])
-    return tree
-
-
-def build_tree(inputfile: str) -> dict:
+def build_tree(inputfile: str) -> pd.DataFrame:
     """
     Given the path to NCBI Taxonomy 'taxdmp.zip' file or simply a
     'nodes.dmp' file, builds a slim tree data structure.
@@ -57,13 +40,38 @@ def build_tree(inputfile: str) -> dict:
         fields = split_line(line)
         tree[fields[0]] = {
             "id": fields[0],
-            "parent_id": fields[1]
+            "parent_id": fields[1],
+            "rank": fields[2]
         }
     dmp.close()
-    return tree_reparenting(tree)
+    # creating a full tree
+    tree = tree_reparenting(tree)
+
+    # transversing the tree to find 'left' and 'right' indexes
+    nodes = []
+    tree_traversal(tree["1"], nodes)
+    nested_set, visited, counter = [], {}, -1
+    for i, node in enumerate(nodes):
+        taxid, depth = node[0], node[1]
+        parent_id, rank = tree[taxid]["parent_id"], tree[taxid]["rank"]
+        if taxid not in visited:
+            # create array with left ('lft') index
+            nested_set.append([taxid, parent_id, rank, depth, i + 1, 0])
+            counter += 1
+            visited[taxid] = counter
+        else:
+            # update the right ('rgt') index
+            nested_set[visited[taxid]][5] = i + 1
+
+    # load dict into a pandas DataFrame for fast indexing and operations
+    df = pd.DataFrame(nested_set, columns=["id", "parent_id", "rank", "depth", "lft", "rgt"]) \
+        .astype(dtype={"id": "string", "parent_id": "string", "rank": "string"})
+    # shift index to start from 1
+    df.index += 1
+    return df
 
 
-def write_tree(tree: dict, outputfile: str, outputformat: str = "pickle") -> None:
+def write_tree(tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle") -> None:
     """
     Writes a tree dict object to file.
 
@@ -73,13 +81,12 @@ def write_tree(tree: dict, outputfile: str, outputformat: str = "pickle") -> Non
     :return: (side-effects) writes to file
     """
     if outputformat == "pickle":
-        with open(outputfile, 'wb') as outfile:
-            pickle.dump(tree, outfile)
+        tree.to_pickle(outputfile)
     else:
         print_and_exit(f"Output format '{outputformat}' is not valid!")
 
 
-def load_tree(inputfile: str, inputformat: str = "pickle") -> dict:
+def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
     """
     Loads a pre-existing tree dict from file.
 
@@ -88,12 +95,12 @@ def load_tree(inputfile: str, inputformat: str = "pickle") -> dict:
     :return: dict object
     """
     if inputformat == "pickle":
-        return pickle.load(open(inputfile, "rb"))
+        return pd.read_pickle(inputfile)
     else:
         print_and_exit(f"Input format '{inputformat}' is not valid!")
 
 
-def search_taxids(tree: dict,
+def search_taxids(tree: pd.DataFrame,
                   includeids: list or str,
                   excludeids: list or str or None = None,
                   filterids: list or str or None = None,
@@ -130,8 +137,12 @@ def search_taxids(tree: dict,
     if ignoreinvalid or validate_taxids(tree, taxids_include):
         taxids_found = taxids_include[:]
         for taxid in taxids_include:
-            if taxid in tree:
-                get_all_children(tree[taxid], taxids_found, taxid)
+            if taxid in tree["id"].values:
+                node = tree[(tree["id"] == taxid)]
+                taxids = [taxid for taxid in
+                          tree[(tree["lft"] > node.iloc[0]["lft"]) &
+                               (tree["rgt"] < node.iloc[0]["rgt"])]["id"]]
+                taxids_found.extend(taxids)
     else:
         print_and_exit(message)
 
@@ -144,8 +155,12 @@ def search_taxids(tree: dict,
         if ignoreinvalid or validate_taxids(tree, taxids_exclude):
             taxids_excluded = taxids_exclude[:]
             for taxid in taxids_exclude:
-                if taxid in tree:
-                    get_all_children(tree[taxid], taxids_excluded, taxid)
+                if taxid in tree["id"].values:
+                    node = tree[(tree["id"] == taxid)]
+                    taxids = [taxid for taxid in
+                              tree[(tree["lft"] > node.iloc[0]["lft"]) &
+                                   (tree["rgt"] < node.iloc[0]["rgt"])]["id"]]
+                    taxids_excluded.extend(taxids)
             taxids_found = [taxid for taxid in taxids_found if taxid not in taxids_excluded]
         else:
             print_and_exit(message)
@@ -164,7 +179,7 @@ def search_taxids(tree: dict,
     return list(set(taxids_found))
 
 
-def validate_taxids(tree: dict, validateids: list or str) -> bool:
+def validate_taxids(tree: pd.DataFrame, validateids: list or str) -> bool:
     """
     Checks if TaxIDs are in the list and in the Tree.
 
@@ -179,8 +194,8 @@ def validate_taxids(tree: dict, validateids: list or str) -> bool:
         taxids_validate = parse_tax_ids(validateids)
 
     taxids_valid = []
-    for tax_id in taxids_validate:
-        if tax_id in tree:
+    for taxid in taxids_validate:
+        if taxid in tree["id"].values:
             taxids_valid.append(True)
         else:
             taxids_valid.append(False)

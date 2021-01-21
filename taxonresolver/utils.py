@@ -122,21 +122,45 @@ def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list
     return tax_ids
 
 
-def get_all_children(node: dict or list, flatten: list, taxid: str) -> list:
+def tree_reparenting(tree: dict) -> dict:
     """
-    Finds all the TaxIDs from a top node in the Taxonomy Tree.
+    Loops over the Tree dictionary and re-parents every node to
+    find all the node's children.
+
+    :param tree: dict of node objects
+    :return: dict object
+    """
+
+    # tree re-parenting
+    for node in tree.values():
+        if "children" not in tree[node["parent_id"]]:
+            tree[node["parent_id"]]["children"] = []
+        if node["id"] != node["parent_id"]:
+            tree[node["parent_id"]]["children"].append(tree[node["id"]])
+    return tree
+
+
+def tree_traversal(node: dict or list, nodes: list, depth: int = 1) -> list:
+    """
+    Iterate over tree using pre-order strategy. Returns a list of all nodes
+    visited in order (nodes and depths).
 
     :param node: dict object
-    :param flatten: list of TaxIDs
-    :return: updated list of TaxIDs
+    :param nodes: list of TaxIDs
+    :param depth: tree depth
+    :return: list of tuples
     """
 
     if isinstance(node, dict):
-        if taxid != node["id"]:
-            flatten.append(node["id"])
+        nodes.append((node["id"], depth))
         if "children" in node.keys():
-            get_all_children(node["children"], flatten, taxid)
+            depth += 1
+            tree_traversal(node["children"], nodes, depth)
+            depth -= 1
+            nodes.append((node["id"], depth))
+        else:
+            nodes.append((node["id"], depth))
     elif isinstance(node, list):
         for d in node:
-            get_all_children(d, flatten, taxid)
-    return flatten
+            tree_traversal(d, nodes, depth)
+    return nodes
