@@ -187,8 +187,7 @@ def search_taxids(tree: pd.DataFrame,
     return taxids_found
 
 
-
-def validate_taxids(tree: pd.DataFrame, validateids: list or str) -> bool:
+def validate_taxids(tree: pd.DataFrame, validateids: list or set or str) -> bool:
     """
     Checks if TaxIDs are in the list and in the Tree.
 
@@ -198,17 +197,16 @@ def validate_taxids(tree: pd.DataFrame, validateids: list or str) -> bool:
     """
 
     if type(validateids) is list:
+        taxids_validate = set(validateids)
+    elif type(validateids) is set:
         taxids_validate = validateids
     elif type(validateids) is str:
-        taxids_validate = parse_tax_ids(validateids)
+        taxids_validate = set(parse_tax_ids(validateids))
 
-    taxids_valid = []
-    for taxid in taxids_validate:
-        if taxid in tree["id"].values:
-            taxids_valid.append(True)
-        else:
-            taxids_valid.append(False)
-    return False if False in taxids_valid else True
+    taxids_valid = taxids_validate.intersection(set(tree["id"].values))
+    if len(taxids_valid) == len(taxids_validate):
+        return True
+    return False
 
 
 class TaxonResolver(object):
