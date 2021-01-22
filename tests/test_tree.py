@@ -34,6 +34,7 @@ class TestTree:
         resolver.download(os.path.join(cwd, f"../testdata/taxdmp.zip"), "zip")
         assert os.path.isfile(os.path.join(cwd, "../testdata/taxdmp.zip"))
 
+    @pytest.mark.skip(reason="Skip test by default!")
     def test_resolver_build(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
@@ -42,6 +43,7 @@ class TestTree:
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
+        assert len(resolver.tree) == 2302938
         resolver.write(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         assert os.path.isfile(os.path.join(cwd, "../testdata/tree.pickle"))
 

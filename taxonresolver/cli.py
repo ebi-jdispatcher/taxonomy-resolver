@@ -11,7 +11,6 @@ Taxonomy Resolver
 import click
 
 from taxonresolver import __version__
-
 from taxonresolver import TaxonResolver
 from taxonresolver.utils import load_logging
 from taxonresolver.utils import print_and_exit
@@ -170,7 +169,7 @@ def search(infile: str, outfile: str or None, informat: str,
             includeids.extend(parse_tax_ids(taxidinclude))
     else:
         for taxid in taxids:
-            includeids.extend(list(set(taxid.split(","))))
+            includeids.extend(taxid.split(","))
 
     excludeids = []
     if taxidexcludes:
@@ -178,16 +177,16 @@ def search(infile: str, outfile: str or None, informat: str,
             excludeids.extend(parse_tax_ids(taxidexclude))
     elif taxidsexcludes:
         for taxid in taxidsexcludes:
-            excludeids.extend(list(set(taxid.split(","))))
+            excludeids.extend(taxid.split(","))
 
     filterids = []
     if taxidfilters:
         for taxidfilter in taxidfilters:
             filterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
 
-    tax_ids = resolver.search(taxidinclude=list(set(includeids)),
-                              taxidexclude=list(set(excludeids)),
-                              taxidfilter=list(set(filterids)),
+    tax_ids = resolver.search(taxidinclude=includeids,
+                              taxidexclude=excludeids,
+                              taxidfilter=filterids,
                               ignoreinvalid=ignoreinvalid)
     if outfile:
         with open(outfile, "w") as outfile:
@@ -240,8 +239,8 @@ def validate(infile: str, informat: str,
     else:
         includeids = []
         for taxid in taxids:
-            includeids.extend(list(set(taxid.split(","))))
-    valid = resolver.validate(taxidinclude=list(set(includeids)))
+            includeids.extend(taxid.split(","))
+    valid = resolver.validate(taxidinclude=includeids)
     logging.info(f"Validated TaxIDs in the '{infile}' tree.")
     print_and_exit(str(valid))
 

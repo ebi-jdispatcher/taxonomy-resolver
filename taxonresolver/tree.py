@@ -20,12 +20,13 @@ from taxonresolver.utils import tree_reparenting
 from taxonresolver.utils import tree_traversal
 
 
-def build_tree(inputfile: str) -> pd.DataFrame:
+def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
     """
     Given the path to NCBI Taxonomy 'taxdmp.zip' file or simply a
     'nodes.dmp' file, builds a slim tree data structure.
 
     :param inputfile: Path to inputfile
+    :param root: TaxID of the root Node
     :return: dict object
     """
 
@@ -49,7 +50,7 @@ def build_tree(inputfile: str) -> pd.DataFrame:
 
     # transversing the tree to find 'left' and 'right' indexes
     nodes = []
-    tree_traversal(tree["1"], nodes)
+    tree_traversal(tree[root], nodes)
     nested_set, visited, counter = [], {}, -1
     for i, node in enumerate(nodes):
         taxid, depth = node[0], node[1]
@@ -65,9 +66,7 @@ def build_tree(inputfile: str) -> pd.DataFrame:
 
     # load dict into a pandas DataFrame for fast indexing and operations
     df = pd.DataFrame(nested_set, columns=["id", "parent_id", "rank", "depth", "lft", "rgt"]) \
-        .astype(dtype={"id": "string", "parent_id": "string", "rank": "string"})
-    # shift index to start from 1
-    df.index += 1
+        .astype(dtype={"id": str, "parent_id": str, "rank": str})
     return df
 
 
