@@ -105,7 +105,7 @@ def search_taxids(tree: pd.DataFrame,
                   excludeids: list or str or None = None,
                   filterids: list or str or None = None,
                   ignoreinvalid: bool = False,
-                  sep: str = None, indx: int = 0) -> list:
+                  sep: str = None, indx: int = 0) -> list or set:
     """
     Searches an existing tree dict and produces a list of TaxIDs.
     Search is performed based on a list of TaxIDs (includedids). A search is also
@@ -131,52 +131,61 @@ def search_taxids(tree: pd.DataFrame,
 
     # find all the children nodes of the list of TaxIDs to be included in the search
     if type(includeids) is list:
-        taxids_include = includeids
+        taxids_include = set(includeids)
     elif type(includeids) is str:
-        taxids_include = parse_tax_ids(includeids)
+        taxids_include = set(parse_tax_ids(includeids))
     if ignoreinvalid or validate_taxids(tree, taxids_include):
-        taxids_found = taxids_include[:]
-        for taxid in taxids_include:
-            if taxid in tree["id"].values:
-                node = tree[(tree["id"] == taxid)]
-                taxids = [taxid for taxid in
-                          tree[(tree["lft"] > node.iloc[0]["lft"]) &
-                               (tree["rgt"] < node.iloc[0]["rgt"])]["id"]]
-                taxids_found.extend(taxids)
+        taxids_found = taxids_include
+        # get a subset dataset sorted (by 'lft')
+        subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
+        # optimisation - get only lft and rgt values that make larger groups
+        # i.e. smaller containers (sub-trees) that are already part of larger containers
+        # are dropped, to reduce number of table operations
+        boundaries = []
+        tmp_lft, tmp_rgt = 0, 0
+        for l, r in zip(subset["lft"].values, subset["rgt"].values):
+            if l > tmp_lft and r > tmp_rgt:
+                tmp_lft, tmp_rgt = l, r
+                boundaries.append((l, r))
+        for l, r in boundaries:
+            taxids = tree[(tree["lft"] > l) & (tree["rgt"] < r)]["id"].values
+            taxids_found.update(taxids)
     else:
         print_and_exit(message)
 
     # find all the children nodes of the list of TaxIDs to be excluded from the search
     if excludeids:
         if type(excludeids) is list:
-            taxids_exclude = excludeids
+            taxids_exclude = set(excludeids)
         elif type(excludeids) is str:
-            taxids_exclude = parse_tax_ids(excludeids)
+            taxids_exclude = set(parse_tax_ids(excludeids))
         if ignoreinvalid or validate_taxids(tree, taxids_exclude):
-            taxids_excluded = taxids_exclude[:]
-            for taxid in taxids_exclude:
-                if taxid in tree["id"].values:
-                    node = tree[(tree["id"] == taxid)]
-                    taxids = [taxid for taxid in
-                              tree[(tree["lft"] > node.iloc[0]["lft"]) &
-                                   (tree["rgt"] < node.iloc[0]["rgt"])]["id"]]
-                    taxids_excluded.extend(taxids)
-            taxids_found = [taxid for taxid in taxids_found if taxid not in taxids_excluded]
+            subset = tree[tree["id"].isin(taxids_exclude)].sort_values("lft")
+            boundaries = []
+            tmp_lft, tmp_rgt = 0, 0
+            for l, r in zip(subset["lft"].values, subset["rgt"].values):
+                if l > tmp_lft and r > tmp_rgt:
+                    tmp_lft, tmp_rgt = l, r
+                    boundaries.append((l, r))
+            for l, r in boundaries:
+                taxids = list(tree[(tree["lft"] > l) & (tree["rgt"] < r)]["id"].values)
+                taxids_exclude.update(taxids)
+            taxids_found = taxids_found.difference(taxids_exclude)
         else:
             print_and_exit(message)
 
     # keep only TaxIDs that are in the provided list of TaxIDs to filter with
     if filterids:
         if type(filterids) is list:
-            taxids_filter = filterids
+            taxids_filter = set(filterids)
         elif type(filterids) is str:
-            taxids_filter = parse_tax_ids(filterids, sep, indx)
+            taxids_filter = set(parse_tax_ids(filterids, sep, indx))
         if ignoreinvalid or validate_taxids(tree, taxids_filter):
-            taxids_found = [taxid for taxid in taxids_found if taxid in taxids_filter]
+            taxids_found = taxids_found.intersection(taxids_filter)
         else:
             print_and_exit(message)
+    return taxids_found
 
-    return list(set(taxids_found))
 
 
 def validate_taxids(tree: pd.DataFrame, validateids: list or str) -> bool:
@@ -230,7 +239,7 @@ class TaxonResolver(object):
         return validate_taxids(self.tree, taxidinclude)
 
     def search(self, taxidinclude, taxidexclude=None, taxidfilter=None,
-               ignoreinvalid=False, **kwargs) -> list or None:
+               ignoreinvalid=False, **kwargs) -> list or set or None:
         """Search a Tree based on a list of TaxIDs."""
         return search_taxids(self.tree, taxidinclude, taxidexclude, taxidfilter,
                              ignoreinvalid, **kwargs)

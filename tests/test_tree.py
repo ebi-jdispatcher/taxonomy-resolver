@@ -166,6 +166,12 @@ class TestTree:
         assert len(taxids) == 9
         taxids = resolver.search(taxidinclude=["29"])
         assert len(taxids) == 1
+        taxids = resolver.search(taxidinclude=["4", "10", "12", "14"])
+        assert len(taxids) == 21
+        taxids = resolver.search(taxidinclude=["7", "11", "21", "27", "29"])
+        assert len(taxids) == 9
+        taxids = resolver.search(taxidinclude=["7", "11", "5", "21", "27", "29"])
+        assert len(taxids) == 14
 
     def test_resolver_search_exclude_mock_tree(self, context, cwd):
         resolver = TaxonResolver(logging=context)
