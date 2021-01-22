@@ -1,3 +1,13 @@
+**0.2.0**
+
+- Improved performance with Nested Sets
+- Added new `pandas` dependency
+- Tree "schema" stored as a pandas ``DataFrame``
+- Modified Preorder Tree Traversal markup is used for quick tree search
+- Improved search times by reducing the number of subtrees searched
+- Additional optimisations by using Python ``sets``
+- Updated description in the ``README.rst``
+
 **0.1.0**
 
 - Removed the "Any Python Tree" `anytree` dependency
