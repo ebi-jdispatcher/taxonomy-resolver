@@ -104,7 +104,7 @@ def search_taxids(tree: pd.DataFrame,
                   includeids: list or str,
                   excludeids: list or str or None = None,
                   filterids: list or str or None = None,
-                  ignoreinvalid: bool = False,
+                  ignoreinvalid: bool = True,
                   sep: str = None, indx: int = 0) -> list or set:
     """
     Searches an existing tree dict and produces a list of TaxIDs.
@@ -135,7 +135,8 @@ def search_taxids(tree: pd.DataFrame,
     elif type(includeids) is str:
         taxids_include = set(parse_tax_ids(includeids))
     if ignoreinvalid or validate_taxids(tree, taxids_include):
-        taxids_found = taxids_include
+        # if ignoringinvalid, we should still only return TaxIDs that exist in the Tree
+        taxids_found = taxids_include.intersection(set(tree["id"].values))
         # get a subset dataset sorted (by 'lft')
         subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
         # optimisation - get only lft and rgt values that make larger groups
@@ -237,7 +238,7 @@ class TaxonResolver(object):
         return validate_taxids(self.tree, taxidinclude)
 
     def search(self, taxidinclude, taxidexclude=None, taxidfilter=None,
-               ignoreinvalid=False, **kwargs) -> list or set or None:
+               ignoreinvalid=True, **kwargs) -> list or set or None:
         """Search a Tree based on a list of TaxIDs."""
         return search_taxids(self.tree, taxidinclude, taxidexclude, taxidfilter,
                              ignoreinvalid, **kwargs)
