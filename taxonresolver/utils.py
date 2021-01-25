@@ -12,6 +12,7 @@ import os
 import sys
 import logging
 import requests
+import pandas as pd
 
 
 def get_logging_level(level: str = 'INFO') -> logging:
@@ -164,3 +165,33 @@ def tree_traversal(node: dict or list, nodes: list, depth: int = 1) -> list:
         for d in node:
             tree_traversal(d, nodes, depth)
     return nodes
+
+
+def get_nested_sets(tree: pd.DataFrame) -> list:
+    """
+    Get only lft and rgt values that make larger nested sets,
+    i.e. smaller containers (sub-trees) that are already part of larger
+    containers are dropped, to reduce number of table operations
+
+    :param tree: pandas DataFrame
+    :return: list of tuples
+    """
+    nested_sets = []
+    tmp_lft, tmp_rgt = 0, 0
+    for l, r in zip(tree["lft"].values, tree["rgt"].values):
+        if l > tmp_lft and r > tmp_rgt:
+            tmp_lft, tmp_rgt = l, r
+            nested_sets.append((l, r))
+    return nested_sets
+
+
+def get_children(tree: pd.DataFrame, lft: int, rgt: int) -> list:
+    """
+    Subsets the DataFrame to find all children TaxIDs from a particular node.
+
+    :param tree: pandas DataFrame
+    :param lft: left index based on MPTT
+    :param rgt: right index based on MPTT
+    :return: list of TaxIDs
+    """
+    return tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values

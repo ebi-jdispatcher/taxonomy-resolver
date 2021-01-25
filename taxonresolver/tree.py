@@ -18,6 +18,8 @@ from taxonresolver.utils import split_line
 from taxonresolver.utils import download_taxonomy_dump
 from taxonresolver.utils import tree_reparenting
 from taxonresolver.utils import tree_traversal
+from taxonresolver.utils import get_nested_sets
+from taxonresolver.utils import get_children
 
 
 def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
@@ -138,17 +140,9 @@ def search_taxids(tree: pd.DataFrame,
         taxids_found = taxids_include.intersection(set(tree["id"].values))
         # get a subset dataset sorted (by 'lft')
         subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
-        # optimisation - get only lft and rgt values that make larger groups
-        # i.e. smaller containers (sub-trees) that are already part of larger containers
-        # are dropped, to reduce number of table operations
-        boundaries = []
-        tmp_lft, tmp_rgt = 0, 0
-        for l, r in zip(subset["lft"].values, subset["rgt"].values):
-            if l > tmp_lft and r > tmp_rgt:
-                tmp_lft, tmp_rgt = l, r
-                boundaries.append((l, r))
-        for l, r in boundaries:
-            taxids = tree[(tree["lft"] > l) & (tree["rgt"] < r)]["id"].values
+        nested_sets = get_nested_sets(subset)
+        for l, r in nested_sets:
+            taxids = get_children(tree, l, r)
             taxids_found.update(taxids)
     else:
         print_and_exit(message)
@@ -161,14 +155,9 @@ def search_taxids(tree: pd.DataFrame,
             taxids_exclude = set(parse_tax_ids(excludeids))
         if ignoreinvalid or validate_taxids(tree, taxids_exclude):
             subset = tree[tree["id"].isin(taxids_exclude)].sort_values("lft")
-            boundaries = []
-            tmp_lft, tmp_rgt = 0, 0
-            for l, r in zip(subset["lft"].values, subset["rgt"].values):
-                if l > tmp_lft and r > tmp_rgt:
-                    tmp_lft, tmp_rgt = l, r
-                    boundaries.append((l, r))
-            for l, r in boundaries:
-                taxids = list(tree[(tree["lft"] > l) & (tree["rgt"] < r)]["id"].values)
+            nested_sets = get_nested_sets(subset)
+            for l, r in nested_sets:
+                taxids = get_children(tree, l, r)
                 taxids_exclude.update(taxids)
             taxids_found = taxids_found.difference(taxids_exclude)
         else:
