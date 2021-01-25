@@ -1,3 +1,8 @@
+**0.2.1**
+
+- Re-added the "filter" option to the `TaxonResolver` class and CLI
+- Several improvements in usability and consistency
+
 **0.2.0**
 
 - Improved performance with Nested Sets
