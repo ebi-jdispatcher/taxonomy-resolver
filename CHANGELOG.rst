@@ -50,7 +50,7 @@
 **0.0.2**
 
 - Added wrapper class and methods to work with the Taxonomy Resolver
-- Added functions to build a Tree and converting it to `anytree`_ Tree (with re-parenting)
+- Added functions to build a Tree and converting it to `anytree` Tree (with re-parenting)
 - Added command-line interface (CLI) with sub-commands for common functions
 
 **0.0.1**

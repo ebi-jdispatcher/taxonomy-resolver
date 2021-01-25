@@ -27,7 +27,7 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
 
     :param inputfile: Path to inputfile
     :param root: TaxID of the root Node
-    :return: dict object
+    :return: pandas DataFrame
     """
 
     tree = {}
@@ -72,9 +72,9 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
 
 def write_tree(tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle") -> None:
     """
-    Writes a tree dict object to file.
+    Writes a pandas DataFrame object to file.
 
-    :param tree: dict object
+    :param tree: pandas DataFrame
     :param outputfile: Path to outputfile
     :param outputformat: currently "pickle" format
     :return: (side-effects) writes to file
@@ -87,11 +87,11 @@ def write_tree(tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle"
 
 def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
     """
-    Loads a pre-existing tree dict from file.
+    Loads a pre-existing pandas DataFrame from file.
 
     :param inputfile: Path to outputfile
     :param inputformat: currently "pickle" format
-    :return: dict object
+    :return: pandas DataFrame
     """
     if inputformat == "pickle":
         return pd.read_pickle(inputfile)
@@ -106,14 +106,14 @@ def search_taxids(tree: pd.DataFrame,
                   ignoreinvalid: bool = True,
                   sep: str = None, indx: int = 0) -> list or set:
     """
-    Searches an existing tree dict and produces a list of TaxIDs.
+    Searches an existing tree pandas DataFrame and produces a list of TaxIDs.
     Search is performed based on a list of TaxIDs (includedids). A search is also
     performed on a list of TaxIDs (excludedids), if provided. Those will be
     removed from the search on the includedids. From this final list of TaxIDs,
     filterids can used to clean the final set. This could be useful to compress a
     final list of TaxIDs, to only return those known to exist in another dataset.
 
-    :param tree: dict object
+    :param tree: pandas DataFrame
     :param includeids: list of TaxIDs or Path to file with TaxIDs to search with
     :param excludeids: list of TaxIDs or Path to file with TaxIDs to exclude
         from the search (optional)
@@ -134,7 +134,7 @@ def search_taxids(tree: pd.DataFrame,
     elif type(includeids) is str:
         taxids_include = set(parse_tax_ids(includeids))
     if ignoreinvalid or validate_taxids(tree, taxids_include):
-        # if ignoringinvalid, we should still only return TaxIDs that exist in the Tree
+        # if ignoring invalid, we should still only return TaxIDs that exist in the Tree
         taxids_found = taxids_include.intersection(set(tree["id"].values))
         # get a subset dataset sorted (by 'lft')
         subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
@@ -191,7 +191,7 @@ def validate_taxids(tree: pd.DataFrame, validateids: list or set or str) -> bool
     """
     Checks if TaxIDs are in the list and in the Tree.
 
-    :param tree: dict object
+    :param tree: pandas DataFrame
     :param validateids: list of TaxIDs or Path to file with TaxIDs to validate
     :return: boolean
     """
@@ -221,15 +221,15 @@ class TaxonResolver(object):
         download_taxonomy_dump(outputfile, outputformat)
 
     def build(self, inputfile) -> None:
-        """Build a tree object from the NCBI Taxonomy dump file."""
+        """Build a Tree from the NCBI Taxonomy dump file."""
         self.tree = build_tree(inputfile)
 
     def write(self, outputfile, outputformat="pickle") -> None:
-        """Write a tree object in Pickle format."""
+        """Write a Tree in Pickle format."""
         write_tree(self.tree, outputfile, outputformat)
 
     def load(self, inputfile, inputformat="pickle") -> None:
-        """Load a tree from a Pickle file."""
+        """Load a Tree from a Pickle file."""
         self.tree = load_tree(inputfile, inputformat)
 
     def validate(self, taxidinclude) -> bool:
