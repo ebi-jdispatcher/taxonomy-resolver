@@ -84,8 +84,14 @@ def download(outfile: str, outformat: str,
               multiple=False, help="Input format (currently: 'pickle').")
 @click.option('-outf', '--outformat', 'outformat', type=str, default="pickle", required=False,
               multiple=False, help="Output format (currently: 'pickle').")
+@click.option('-taxidsf', '--taxidfilter', 'taxidfilters', type=str, required=False,
+              multiple=True, help="Path to Taxonomy id list file used to filter the search.")
+@click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
+              multiple=False, help="Ignores invalid TaxIDs.")
 @add_common(common_options)
+@add_common(common_options_parsing)
 def build(infile: str, outfile: str, informat: str or None, outformat: str,
+          taxidfilters: tuple = None, ignoreinvalid: bool = False, sep: str = None, indx: int = 0,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Build a NCBI Taxonomy Tree data structure."""
 
@@ -93,6 +99,9 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 
     # input options validation
     validate_inputs_outputs(inputfile=infile, outputfile=outfile)
+    if taxidfilters:
+        for taxidfilter in taxidfilters:
+            validate_inputs_outputs(inputfile=taxidfilter)
     logging.info("Validated inputs and outputs.")
 
     resolver = TaxonResolver(logging)
@@ -104,6 +113,12 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
                      f"This may take several minutes to complete...")
         resolver.build(infile)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
+    if taxidfilters:
+        filterids = []
+        for taxidfilter in taxidfilters:
+            filterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
+        resolver.filter(taxidfilter=filterids, ignoreinvalid=ignoreinvalid)
+        logging.info(f"Filtered NCBI Taxonomy with the provided filters.")
 
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
@@ -207,7 +222,7 @@ def search(infile: str, outfile: str or None, informat: str,
               multiple=False, help="Input format (currently: 'pickle').")
 @click.option('-taxid', '--taxid', 'taxids', is_flag=False, type=str, required=False,
               multiple=True, help="Comma-separated TaxIDs or pass multiple values. Output to "
-                                   "STDOUT by default.")
+                                  "STDOUT by default.")
 @click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
               multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
 @add_common(common_options)
