@@ -195,3 +195,15 @@ def get_children(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :return: list of TaxIDs
     """
     return tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values
+
+
+def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
+    """
+    Subsets the DataFrame to find all parent TaxIDs from a particular node.
+
+    :param tree: pandas DataFrame
+    :param lft: left index based on MPTT
+    :param rgt: right index based on MPTT
+    :return: list of TaxIDs
+    """
+    return tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values

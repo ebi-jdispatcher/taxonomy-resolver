@@ -20,6 +20,7 @@ from taxonresolver.utils import tree_reparenting
 from taxonresolver.utils import tree_traversal
 from taxonresolver.utils import get_nested_sets
 from taxonresolver.utils import get_children
+from taxonresolver.utils import get_parents
 
 
 def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
@@ -99,6 +100,47 @@ def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
         return pd.read_pickle(inputfile)
     else:
         print_and_exit(f"Input format '{inputformat}' is not valid!")
+
+
+def filter_tree(tree: pd.DataFrame, filterids: list or str or None = None,
+                root: str = "1", ignoreinvalid: bool = True, sep: str = None, indx: int = 0) -> pd.DataFrame:
+    """
+    Filters an existing pandas DataFrame based on a List of TaxIDs.
+
+    :param tree: pandas DataFrame
+    :param filterids: list of TaxIDs or Path to file with TaxIDs to filter
+        (i.e. to keep) in the final set of results (optional)
+    :param root: TaxID of the root Node
+    :param ignoreinvalid: whether to ignore invalid TaxIDs or not
+    :param sep: separator for splitting the input file lines
+    :param indx: index used for splicing the the resulting list
+    :return: pandas DataFrame
+    """
+
+    message = ("Some of the provided TaxIDs are not valid or not found "
+               "in the built Tree.")
+
+    if type(filterids) is list:
+        taxids_filter = set(filterids)
+    elif type(filterids) is str:
+        taxids_filter = set(parse_tax_ids(filterids, sep, indx))
+
+    if ignoreinvalid or validate_taxids(tree, taxids_filter):
+        # if ignoring invalid, we should still only return TaxIDs that exist in the Tree
+        taxids_filter = taxids_filter.intersection(set(tree["id"].values))
+        # get a subset dataset sorted (by 'lft')
+        subset = tree[tree["id"].isin(taxids_filter)].sort_values("lft")
+        nested_sets = get_nested_sets(subset)
+        for l, r in nested_sets:
+            taxids = get_children(tree, l, r)
+            taxids_filter.update(taxids)
+            # expand taxids_filter with parents of the selected node
+            taxids = get_parents(tree, l, r)
+            taxids_filter.update(taxids)
+        df = tree[tree["id"].isin(taxids_filter)].reset_index()
+    else:
+        print_and_exit(message)
+    return df
 
 
 def search_taxids(tree: pd.DataFrame,
@@ -220,6 +262,14 @@ class TaxonResolver(object):
     def load(self, inputfile, inputformat="pickle") -> None:
         """Load a Tree from a Pickle file."""
         self.tree = load_tree(inputfile, inputformat)
+
+    def filter(self, taxidfilter, **kwargs) -> None:
+        """Re-build a minimal Tree based on the TaxIDs provided."""
+        if not type(self.tree) is pd.DataFrame:
+            message = ("The Taxonomy Tree needs to be built "
+                       "before 'filter' can be called.")
+            print_and_exit(message)
+        self.tree = filter_tree(self.tree, taxidfilter, **kwargs)
 
     def validate(self, taxidinclude) -> bool:
         """Validate a list of TaxIDs against a Tree."""

@@ -52,6 +52,25 @@ class TestTree:
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         assert len(resolver.tree) == 2302938
 
+    def test_resolver_filter(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert len(resolver.tree) == 1000
+
+    def test_resolver_filter_and_write(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
+        resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
+        assert len(resolver.tree) == 1000
+        resolver.write(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_filtered.pickle"))
+
+    def test_resolver_filter_load(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
+        assert len(resolver.tree) == 1000
+
     def test_resolver_search_by_taxid_human(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
@@ -158,6 +177,34 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
         assert len(resolver.tree) == 29
+
+    def test_resolver_filter_mock_tree(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        resolver.filter(taxidfilter=["12", "21"])
+        assert len(resolver.tree) == 9
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        resolver.filter(taxidfilter=["10", "21", "24"])
+        assert len(resolver.tree) == 17
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        resolver.filter(taxidfilter=["10", "21", "9", "27"])
+        assert len(resolver.tree) == 19
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        resolver.filter(taxidfilter=["19", "25", "22", "29"])
+        assert len(resolver.tree) == 18
+
+    def test_resolver_filter_and_write(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        resolver.filter(taxidfilter=["12", "21"])
+        assert len(resolver.tree) == 9
+        resolver.write(os.path.join(cwd, "../testdata/tree_mock_filtered.pickle"), "pickle")
+        assert os.path.isfile(os.path.join(cwd, "../testdata/tree_mock_filtered.pickle"))
+
+    def test_resolver_filter_load(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock_filtered.pickle"), "pickle")
+        assert len(resolver.tree) == 9
 
     def test_resolver_search_mock_tree(self, context, cwd):
         resolver = TaxonResolver(logging=context)
