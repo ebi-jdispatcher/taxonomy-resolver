@@ -9,10 +9,11 @@ The main features of Taxonomy Resolver are:
 1. Downloading taxonomy dump files from the `NCBI ftp server`_
 2. Building an NCBI Taxonomy Tree data structure based on the NCBI Taxonomy classification
 3. Writing and loading the Tree structure in ``pickle`` format
-4. Quick lookup to see if a TaxID exists in the Tree (i.e. is valid)
-5. Generate lists of all children TaxIDs that compose a particular Node (sub-tree)
-6. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs (included and excluded sub-trees)
-7. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs that are not observed in a dataset of interest
+4. Building a slimmer "filtered" Tree (based on a list of TaxIDs) to improve performance
+5. Quick lookup to see if a TaxID exists in the Tree (i.e. is valid)
+6. Generate lists of all children TaxIDs that compose a particular Node (sub-tree)
+7. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs (included and excluded sub-trees)
+8. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs that are not observed in a dataset of interest
 
 Taxonomy Resolver initially builds a tree hierarchy structure resulting in deeply nested dictionaries. To retrieve a full tree or a sub-tree, a lot of iteration takes place, following the path from the node of interest down the hierarchy. This approach does not scale well, especially for very large trees. Thus, in Taxonomy Resolver, the tree is represented following a different approach, commonly referred to as the Nested Set Model. In the Nested Set Model, we can look at a tree hierarchy differently, not as connected nodes, but as nested containers. The nested set model is a particular technique for representing nested sets in relational databases, which we implement here in a pandas ``DataFrame``. For that, the full tree is traversed with Modified Preorder Tree Traversal strategy. In a preorder traversal, the root node is visited first, then recursively a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order, until every node has been visited. The modified strategy allows us to capture the 'left' and 'right' (``lft`` and ``rgt``, respectively) boundaries of each nested container. Querying and searching is much faster with this approach because finding a subtree is as simple as filtering/searching for the nodes where ``lft > Node's lft`` and ``rgt < Node's rgt``. Likewise, find the full path to a node is as simple as filtering/searching for the nodes where ``lft < Node's lft`` and ``rgt > Node's rgt``.
 
@@ -219,6 +220,11 @@ Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or
 
   python taxonomy-resolver.py build -in taxdmp.zip -out tree.pickle
 
+Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
+
+.. code-block:: bash
+
+  python taxonomy-resolver.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs:
 
