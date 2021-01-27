@@ -88,10 +88,13 @@ def download(outfile: str, outformat: str,
               multiple=True, help="Path to Taxonomy id list file used to filter the search.")
 @click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
               multiple=False, help="Ignores invalid TaxIDs.")
+@click.option('-slim', '--slimtable', 'slimtable', is_flag=True, default=False,
+              multiple=False, help="Drops unnecessary columns from the pandas DataFrame.")
 @add_common(common_options)
 @add_common(common_options_parsing)
 def build(infile: str, outfile: str, informat: str or None, outformat: str,
-          taxidfilters: tuple = None, ignoreinvalid: bool = False, sep: str = None, indx: int = 0,
+          taxidfilters: tuple = None, ignoreinvalid: bool = False,
+          sep: str = None, indx: int = 0, slimtable: bool = False,
           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
     """Build a NCBI Taxonomy Tree data structure."""
 
@@ -120,6 +123,9 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
         resolver.filter(taxidfilter=filterids, ignoreinvalid=ignoreinvalid)
         logging.info(f"Filtered NCBI Taxonomy with the provided filters.")
 
+    # dropping unnecessary columns
+    if slimtable:
+        resolver.tree.drop(['rank', 'depth', "parent_id"], axis=1, inplace=True)
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
 
