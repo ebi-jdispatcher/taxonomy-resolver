@@ -256,11 +256,10 @@ Changelog
 
 See release notes on `CHANGELOG.rst`_
 
-Credits
-=======
+Acknowledgments
+===============
 
-* Fábio Madeira <fmadeira@ebi.ac.uk>
-* Adrian Tivey <ativey@ebi.ac.uk>
+I would like to thanks Adrian Tivey for insightful discussions.
 
 Licensing
 =========
