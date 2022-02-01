@@ -276,3 +276,4 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _CHANGELOG.rst: CHANGELOG.rst
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
+.. _EMBL-EBI: https://www.ebi.ac.uk/
