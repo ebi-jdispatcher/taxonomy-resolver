@@ -261,8 +261,9 @@ Acknowledgments
 
 I would like to thanks Adrian Tivey for insightful discussions.
 
-Licensing
-=========
+License
+=======
+The European Bioinformatics Institute - `EMBL-EBI`_, is an Intergovernmental Organization which, as part of the European Molecular Biology Laboratory family, focuses on research and services in bioinformatics.
 
 Apache License 2.0. See `license`_ for details.
 
