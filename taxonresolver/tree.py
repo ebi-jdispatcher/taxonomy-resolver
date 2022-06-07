@@ -83,7 +83,7 @@ def write_tree(tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle"
     :return: (side-effects) writes to file
     """
     if outputformat == "pickle":
-        tree.to_pickle(outputfile)
+        tree.to_pickle(outputfile, protocol=4)
     else:
         print_and_exit(f"Output format '{outputformat}' is not valid!")
 
