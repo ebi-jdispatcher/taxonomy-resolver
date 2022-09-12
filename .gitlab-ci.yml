@@ -2,7 +2,7 @@
 # test/run locally with
 # gitlab-runner exec docker test_pytest
 
-image: python:3.9-stretch
+image: python:3.9
 
 before_script:
   - pip install --no-cache-dir -r requirements.txt
