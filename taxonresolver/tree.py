@@ -40,7 +40,7 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
             dmp = taxdmp.open("nodes.dmp")
     else:
         dmp = open(inputfile, "rb")
-    for line in io.TextIOWrapper(dmp):
+    for line in io.TextIOWrapper(dmp, encoding="unicode_escape"):
         fields = split_line(line)
         tree[fields[0]] = {
             "id": fields[0],
