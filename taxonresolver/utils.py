@@ -8,32 +8,37 @@ Taxonomy Resolver
 :license: Apache 2.0, see LICENSE for more details.
 """
 
+import logging
 import os
 import sys
-import logging
-import requests
+
 import pandas as pd
+import requests
 
 
-def get_logging_level(level: str = 'INFO') -> logging:
-    if level == 'DEBUG':
+def get_logging_level(level: str = "INFO") -> logging:
+    if level == "DEBUG":
         return logging.DEBUG
-    elif level == 'INFO':
+    elif level == "INFO":
         return logging.INFO
-    elif level == 'WARN':
+    elif level == "WARN":
         return logging.WARN
-    elif level == 'ERROR':
+    elif level == "ERROR":
         return logging.ERROR
-    elif level == 'CRITICAL':
+    elif level == "CRITICAL":
         return logging.CRITICAL
     else:
         return logging.INFO
 
 
-def load_logging(log_level: str, log_output: str = None, disabled: bool = False) -> logging:
-    logging.basicConfig(format='%(asctime)s - [%(levelname)s] %(message)s',
-                        level=get_logging_level(log_level),
-                        datefmt='%d/%m/%Y %H:%M:%S')
+def load_logging(
+    log_level: str, log_output: str = None, disabled: bool = False
+) -> logging:
+    logging.basicConfig(
+        format="%(asctime)s - [%(levelname)s] %(message)s",
+        level=get_logging_level(log_level),
+        datefmt="%d/%m/%Y %H:%M:%S",
+    )
     if log_output:
         file_handler = logging.FileHandler(log_output)
         logging.getLogger().addHandler(file_handler)
@@ -49,8 +54,9 @@ def print_and_exit(message: str) -> None:
     sys.exit()
 
 
-def validate_inputs_outputs(inputfile: str or None = None,
-                            outputfile: str or None = None) -> None:
+def validate_inputs_outputs(
+    inputfile: str or None = None, outputfile: str or None = None
+) -> None:
     """
     Checks if the passed input/output files are valid and exist.
 
@@ -61,7 +67,9 @@ def validate_inputs_outputs(inputfile: str or None = None,
 
     if inputfile:
         if not os.path.isfile(inputfile):
-            print_and_exit(f"Input file '{inputfile}' does not exist or it is not readable!")
+            print_and_exit(
+                f"Input file '{inputfile}' does not exist or it is not readable!"
+            )
 
     if outputfile:
         try:
@@ -85,7 +93,7 @@ def download_taxonomy_dump(outfile, extension="zip") -> None:
         url = "http://ftp.ebi.ac.uk/pub/databases/ncbi/taxonomy/taxdmp.zip"
     r = requests.get(url, allow_redirects=True)
     if r.ok:
-        open(outfile, 'wb').write(r.content)
+        open(outfile, "wb").write(r.content)
     else:
         print(f"Unable to Download Taxonomy Dump from {url}")
 

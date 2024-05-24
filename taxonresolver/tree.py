@@ -10,17 +10,20 @@ Taxonomy Resolver
 
 import io
 import zipfile
+
 import pandas as pd
 
-from taxonresolver.utils import parse_tax_ids
-from taxonresolver.utils import print_and_exit
-from taxonresolver.utils import split_line
-from taxonresolver.utils import download_taxonomy_dump
-from taxonresolver.utils import tree_reparenting
-from taxonresolver.utils import tree_traversal
-from taxonresolver.utils import get_nested_sets
-from taxonresolver.utils import get_children
-from taxonresolver.utils import get_parents
+from taxonresolver.utils import (
+    download_taxonomy_dump,
+    get_children,
+    get_nested_sets,
+    get_parents,
+    parse_tax_ids,
+    print_and_exit,
+    split_line,
+    tree_reparenting,
+    tree_traversal,
+)
 
 
 def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
@@ -42,11 +45,7 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
         dmp = open(inputfile, "rb")
     for line in io.TextIOWrapper(dmp, encoding="unicode_escape"):
         fields = split_line(line)
-        tree[fields[0]] = {
-            "id": fields[0],
-            "parent_id": fields[1],
-            "rank": fields[2]
-        }
+        tree[fields[0]] = {"id": fields[0], "parent_id": fields[1], "rank": fields[2]}
     dmp.close()
     # creating a full tree
     tree = tree_reparenting(tree)
@@ -68,12 +67,15 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
             nested_set[visited[taxid]][5] = i + 1
 
     # load dict into a pandas DataFrame for fast indexing and operations
-    df = pd.DataFrame(nested_set, columns=["id", "parent_id", "rank", "depth", "lft", "rgt"]) \
-        .astype(dtype={"id": str, "parent_id": str, "rank": str})
+    df = pd.DataFrame(
+        nested_set, columns=["id", "parent_id", "rank", "depth", "lft", "rgt"]
+    ).astype(dtype={"id": str, "parent_id": str, "rank": str})
     return df
 
 
-def write_tree(tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle") -> None:
+def write_tree(
+    tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle"
+) -> None:
     """
     Writes a pandas DataFrame object to file.
 
@@ -102,8 +104,14 @@ def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
         print_and_exit(f"Input format '{inputformat}' is not valid!")
 
 
-def filter_tree(tree: pd.DataFrame, filterids: list or str or None = None,
-                root: str = "1", ignoreinvalid: bool = True, sep: str = None, indx: int = 0) -> pd.DataFrame:
+def filter_tree(
+    tree: pd.DataFrame,
+    filterids: list or str or None = None,
+    root: str = "1",
+    ignoreinvalid: bool = True,
+    sep: str = None,
+    indx: int = 0,
+) -> pd.DataFrame:
     """
     Filters an existing pandas DataFrame based on a List of TaxIDs.
 
@@ -113,12 +121,13 @@ def filter_tree(tree: pd.DataFrame, filterids: list or str or None = None,
     :param root: TaxID of the root Node
     :param ignoreinvalid: whether to ignore invalid TaxIDs or not
     :param sep: separator for splitting the input file lines
-    :param indx: index used for splicing the the resulting list
+    :param indx: index used for splicing the resulting list
     :return: pandas DataFrame
     """
 
-    message = ("Some of the provided TaxIDs are not valid or not found "
-               "in the built Tree.")
+    message = (
+        "Some of the provided TaxIDs are not valid or not found " "in the built Tree."
+    )
 
     if type(filterids) is list:
         taxids_filter = set(filterids)
@@ -143,12 +152,15 @@ def filter_tree(tree: pd.DataFrame, filterids: list or str or None = None,
     return df
 
 
-def search_taxids(tree: pd.DataFrame,
-                  includeids: list or str,
-                  excludeids: list or str or None = None,
-                  filterids: list or str or None = None,
-                  ignoreinvalid: bool = True,
-                  sep: str = None, indx: int = 0) -> list or set:
+def search_taxids(
+    tree: pd.DataFrame,
+    includeids: list or str,
+    excludeids: list or str or None = None,
+    filterids: list or str or None = None,
+    ignoreinvalid: bool = True,
+    sep: str = None,
+    indx: int = 0,
+) -> list or set:
     """
     Searches an existing tree pandas DataFrame and produces a list of TaxIDs.
     Search is performed based on a list of TaxIDs (includedids). A search is also
@@ -165,12 +177,13 @@ def search_taxids(tree: pd.DataFrame,
         (i.e. to keep) in the final set of results (optional)
     :param ignoreinvalid: whether to ignore invalid TaxIDs or not
     :param sep: separator for splitting the input file lines
-    :param indx: index used for splicing the the resulting list
+    :param indx: index used for splicing the resulting list
     :return: list of TaxIDs
     """
 
-    message = ("Some of the provided TaxIDs are not valid or not found "
-               "in the built Tree.")
+    message = (
+        "Some of the provided TaxIDs are not valid or not found " "in the built Tree."
+    )
 
     # find all the children nodes of the list of TaxIDs to be included in the search
     if type(includeids) is list:
@@ -266,8 +279,9 @@ class TaxonResolver(object):
     def filter(self, taxidfilter, **kwargs) -> None:
         """Re-build a minimal Tree based on the TaxIDs provided."""
         if not type(self.tree) is pd.DataFrame:
-            message = ("The Taxonomy Tree needs to be built "
-                       "before 'filter' can be called.")
+            message = (
+                "The Taxonomy Tree needs to be built " "before 'filter' can be called."
+            )
             print_and_exit(message)
         self.tree = filter_tree(self.tree, taxidfilter, **kwargs)
 
@@ -275,8 +289,15 @@ class TaxonResolver(object):
         """Validate a list of TaxIDs against a Tree."""
         return validate_taxids(self.tree, taxidinclude)
 
-    def search(self, taxidinclude, taxidexclude=None, taxidfilter=None,
-               ignoreinvalid=True, **kwargs) -> list or set or None:
+    def search(
+        self,
+        taxidinclude,
+        taxidexclude=None,
+        taxidfilter=None,
+        ignoreinvalid=True,
+        **kwargs,
+    ) -> list or set or None:
         """Search a Tree based on a list of TaxIDs."""
-        return search_taxids(self.tree, taxidinclude, taxidexclude, taxidfilter,
-                             ignoreinvalid, **kwargs)
+        return search_taxids(
+            self.tree, taxidinclude, taxidexclude, taxidfilter, ignoreinvalid, **kwargs
+        )

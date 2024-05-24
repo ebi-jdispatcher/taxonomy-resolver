@@ -10,12 +10,13 @@ Taxonomy Resolver
 
 import click
 
-from taxonresolver import __version__
-from taxonresolver import TaxonResolver
-from taxonresolver.utils import load_logging
-from taxonresolver.utils import print_and_exit
-from taxonresolver.utils import parse_tax_ids
-from taxonresolver.utils import validate_inputs_outputs
+from taxonresolver import TaxonResolver, __version__
+from taxonresolver.utils import (
+    load_logging,
+    parse_tax_ids,
+    print_and_exit,
+    validate_inputs_outputs,
+)
 
 
 # reusing click args and options
@@ -29,24 +30,60 @@ def add_common(options: list):
 
 
 common_options = [
-    click.option('-level', '--log_level', 'log_level', type=str, default='INFO',
-                 multiple=False, help="Log level to use. Expects: 'DEBUG', 'INFO',"
-                                      " 'WARN', 'ERROR', and 'CRITICAL'."),
-    click.option('-l', '--log_output', 'log_output', type=str, required=False,
-                 multiple=False, help="File name to be used to writing logging."),
-    click.option('--quiet', 'quiet', is_flag=True, default=False,
-                 multiple=False, help="Disables logging.")
+    click.option(
+        "-level",
+        "--log_level",
+        "log_level",
+        type=str,
+        default="INFO",
+        multiple=False,
+        help="Log level to use. Expects: 'DEBUG', 'INFO',"
+        " 'WARN', 'ERROR', and 'CRITICAL'.",
+    ),
+    click.option(
+        "-l",
+        "--log_output",
+        "log_output",
+        type=str,
+        required=False,
+        multiple=False,
+        help="File name to be used to writing logging.",
+    ),
+    click.option(
+        "--quiet",
+        "quiet",
+        is_flag=True,
+        default=False,
+        multiple=False,
+        help="Disables logging.",
+    ),
 ]
 
 common_options_parsing = [
-    click.option('-sep', '--sep', 'sep', type=str, required=False, default=None,
-                 multiple=False, help="String Separator to use."),
-    click.option('-indx', '--indx', 'indx', type=int, required=False, default=0,
-                 multiple=False, help="String positional index to use (starts with 0).")
+    click.option(
+        "-sep",
+        "--sep",
+        "sep",
+        type=str,
+        required=False,
+        default=None,
+        multiple=False,
+        help="String Separator to use.",
+    ),
+    click.option(
+        "-indx",
+        "--indx",
+        "indx",
+        type=int,
+        required=False,
+        default=0,
+        multiple=False,
+        help="String positional index to use (starts with 0).",
+    ),
 ]
 
 
-@click.group(chain=True, context_settings={'help_option_names': ['-h', '--help']})
+@click.group(chain=True, context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(version=__version__)
 def cli():
     """Taxonomy Resolver: Build a NCBI Taxonomy Tree, validate and search TaxIDs."""
@@ -54,13 +91,34 @@ def cli():
 
 
 @cli.command("download")
-@click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
-              multiple=False, help="Path to output Tax dump file.")
-@click.option('-outf', '--outformat', 'outformat', type=str, default="zip", required=False,
-              multiple=False, help="Output format (currently: 'zip' or 'tar.gz').")
+@click.option(
+    "-out",
+    "--outfile",
+    "outfile",
+    is_flag=False,
+    type=str,
+    required=True,
+    multiple=False,
+    help="Path to output Tax dump file.",
+)
+@click.option(
+    "-outf",
+    "--outformat",
+    "outformat",
+    type=str,
+    default="zip",
+    required=False,
+    multiple=False,
+    help="Output format (currently: 'zip' or 'tar.gz').",
+)
 @add_common(common_options)
-def download(outfile: str, outformat: str,
-             log_level: str = "INFO", log_output: str = None, quiet: bool = False):
+def download(
+    outfile: str,
+    outformat: str,
+    log_level: str = "INFO",
+    log_output: str = None,
+    quiet: bool = False,
+):
     """Download the NCBI Taxonomy dump file ('taxdmp.zip')."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
@@ -75,27 +133,92 @@ def download(outfile: str, outformat: str,
 
 
 @cli.command("build")
-@click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
-              multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
-                                    "(currently: 'pickle')."))
-@click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=True,
-              multiple=False, help="Path to output file.")
-@click.option('-inf', '--informat', 'informat', type=str, default=None, required=False,
-              multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-outf', '--outformat', 'outformat', type=str, default="pickle", required=False,
-              multiple=False, help="Output format (currently: 'pickle').")
-@click.option('-taxidsf', '--taxidfilter', 'taxidfilters', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file used to filter the search.")
-@click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
-              multiple=False, help="Ignores invalid TaxIDs.")
-@click.option('-slim', '--slimtable', 'slimtable', is_flag=True, default=False,
-              multiple=False, help="Drops unnecessary columns from the pandas DataFrame.")
+@click.option(
+    "-in",
+    "--infile",
+    "infile",
+    is_flag=False,
+    type=str,
+    required=True,
+    multiple=False,
+    help=(
+        "Path to input NCBI BLAST dump or a prebuilt tree file, "
+        "(currently: 'pickle')."
+    ),
+)
+@click.option(
+    "-out",
+    "--outfile",
+    "outfile",
+    is_flag=False,
+    type=str,
+    required=True,
+    multiple=False,
+    help="Path to output file.",
+)
+@click.option(
+    "-inf",
+    "--informat",
+    "informat",
+    type=str,
+    default=None,
+    required=False,
+    multiple=False,
+    help="Input format (currently: 'pickle').",
+)
+@click.option(
+    "-outf",
+    "--outformat",
+    "outformat",
+    type=str,
+    default="pickle",
+    required=False,
+    multiple=False,
+    help="Output format (currently: 'pickle').",
+)
+@click.option(
+    "-taxidsf",
+    "--taxidfilter",
+    "taxidfilters",
+    type=str,
+    required=False,
+    multiple=True,
+    help="Path to Taxonomy id list file used to filter the search.",
+)
+@click.option(
+    "-ignore",
+    "--ignoreinvalid",
+    "ignoreinvalid",
+    is_flag=True,
+    default=False,
+    multiple=False,
+    help="Ignores invalid TaxIDs.",
+)
+@click.option(
+    "-slim",
+    "--slimtable",
+    "slimtable",
+    is_flag=True,
+    default=False,
+    multiple=False,
+    help="Drops unnecessary columns from the pandas DataFrame.",
+)
 @add_common(common_options)
 @add_common(common_options_parsing)
-def build(infile: str, outfile: str, informat: str or None, outformat: str,
-          taxidfilters: tuple = None, ignoreinvalid: bool = False,
-          sep: str = None, indx: int = 0, slimtable: bool = False,
-          log_level: str = "INFO", log_output: str = None, quiet: bool = False):
+def build(
+    infile: str,
+    outfile: str,
+    informat: str or None,
+    outformat: str,
+    taxidfilters: tuple = None,
+    ignoreinvalid: bool = False,
+    sep: str = None,
+    indx: int = 0,
+    slimtable: bool = False,
+    log_level: str = "INFO",
+    log_output: str = None,
+    quiet: bool = False,
+):
     """Build a NCBI Taxonomy Tree data structure."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
@@ -112,8 +235,10 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
         resolver.load(infile, informat)
         logging.info(f"Loaded NCBI Taxonomy from '{infile}' in '{informat}' format.")
     else:
-        logging.info(f"Building NCBI Taxonomy from {infile}. "
-                     f"This may take several minutes to complete...")
+        logging.info(
+            f"Building NCBI Taxonomy from {infile}. "
+            f"This may take several minutes to complete..."
+        )
         resolver.build(infile)
         logging.info(f"Built NCBI Taxonomy from {infile}.")
     if taxidfilters:
@@ -125,39 +250,122 @@ def build(infile: str, outfile: str, informat: str or None, outformat: str,
 
     # dropping unnecessary columns
     if slimtable:
-        resolver.tree.drop(['rank', 'depth', "parent_id"], axis=1, inplace=True)
+        resolver.tree.drop(["rank", "depth", "parent_id"], axis=1, inplace=True)
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
 
 
 @cli.command("search")
-@click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
-              multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
-                                    "(currently: 'pickle')."))
-@click.option('-out', '--outfile', 'outfile', is_flag=False, type=str, required=False,
-              multiple=False, help="Path to output file.")
-@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=False,
-              multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-taxid', '--taxid', 'taxids', is_flag=False, type=str, required=False,
-              multiple=True, help=("Comma-separated TaxIDs or pass multiple values. Output to "
-                                   "STDOUT by default, unless an output file is provided."))
-@click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
-@click.option('-taxidexc', '--taxidexc', 'taxidsexcludes', is_flag=False, type=str, required=False,
-              multiple=True, help="Comma-separated TaxIDs or pass multiple values.")
-@click.option('-taxidse', '--taxidexclude', 'taxidexcludes', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file excluded from the search.")
-@click.option('-taxidsf', '--taxidfilter', 'taxidfilters', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file used to filter the search.")
-@click.option('-ignore', '--ignoreinvalid', 'ignoreinvalid', is_flag=True, default=False,
-              multiple=False, help="Ignores invalid TaxIDs.")
+@click.option(
+    "-in",
+    "--infile",
+    "infile",
+    is_flag=False,
+    type=str,
+    required=True,
+    multiple=False,
+    help=(
+        "Path to input NCBI BLAST dump or a prebuilt tree file, "
+        "(currently: 'pickle')."
+    ),
+)
+@click.option(
+    "-out",
+    "--outfile",
+    "outfile",
+    is_flag=False,
+    type=str,
+    required=False,
+    multiple=False,
+    help="Path to output file.",
+)
+@click.option(
+    "-inf",
+    "--informat",
+    "informat",
+    type=str,
+    default="pickle",
+    required=False,
+    multiple=False,
+    help="Input format (currently: 'pickle').",
+)
+@click.option(
+    "-taxid",
+    "--taxid",
+    "taxids",
+    is_flag=False,
+    type=str,
+    required=False,
+    multiple=True,
+    help=(
+        "Comma-separated TaxIDs or pass multiple values. Output to "
+        "STDOUT by default, unless an output file is provided."
+    ),
+)
+@click.option(
+    "-taxids",
+    "--taxidinclude",
+    "taxidincludes",
+    type=str,
+    required=False,
+    multiple=True,
+    help="Path to Taxonomy id list file used to search the Tree.",
+)
+@click.option(
+    "-taxidexc",
+    "--taxidexc",
+    "taxidsexcludes",
+    is_flag=False,
+    type=str,
+    required=False,
+    multiple=True,
+    help="Comma-separated TaxIDs or pass multiple values.",
+)
+@click.option(
+    "-taxidse",
+    "--taxidexclude",
+    "taxidexcludes",
+    type=str,
+    required=False,
+    multiple=True,
+    help="Path to Taxonomy id list file excluded from the search.",
+)
+@click.option(
+    "-taxidsf",
+    "--taxidfilter",
+    "taxidfilters",
+    type=str,
+    required=False,
+    multiple=True,
+    help="Path to Taxonomy id list file used to filter the search.",
+)
+@click.option(
+    "-ignore",
+    "--ignoreinvalid",
+    "ignoreinvalid",
+    is_flag=True,
+    default=False,
+    multiple=False,
+    help="Ignores invalid TaxIDs.",
+)
 @add_common(common_options)
 @add_common(common_options_parsing)
-def search(infile: str, outfile: str or None, informat: str,
-           taxids: str or None, taxidincludes: str or None,
-           taxidsexcludes: str or None, taxidexcludes: str or None, taxidfilters: tuple = None,
-           ignoreinvalid: bool = False, sep: str = None, indx: int = 0,
-           log_level: str = "INFO", log_output: str = None, quiet: bool = False):
+def search(
+    infile: str,
+    outfile: str or None,
+    informat: str,
+    taxids: str or None,
+    taxidincludes: str or None,
+    taxidsexcludes: str or None,
+    taxidexcludes: str or None,
+    taxidfilters: tuple = None,
+    ignoreinvalid: bool = False,
+    sep: str = None,
+    indx: int = 0,
+    log_level: str = "INFO",
+    log_output: str = None,
+    quiet: bool = False,
+):
     """Searches a Tree data structure and writes a list of TaxIDs."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
@@ -205,10 +413,12 @@ def search(infile: str, outfile: str or None, informat: str,
         for taxidfilter in taxidfilters:
             filterids.extend(parse_tax_ids(taxidfilter, sep=sep, indx=indx))
 
-    tax_ids = resolver.search(taxidinclude=includeids,
-                              taxidexclude=excludeids,
-                              taxidfilter=filterids,
-                              ignoreinvalid=ignoreinvalid)
+    tax_ids = resolver.search(
+        taxidinclude=includeids,
+        taxidexclude=excludeids,
+        taxidfilter=filterids,
+        ignoreinvalid=ignoreinvalid,
+    )
     if outfile:
         with open(outfile, "w") as outfile:
             outfile.write("\n".join(tax_ids))
@@ -221,20 +431,59 @@ def search(infile: str, outfile: str or None, informat: str,
 
 
 @cli.command("validate")
-@click.option('-in', '--infile', 'infile', is_flag=False, type=str, required=True,
-              multiple=False, help=("Path to input NCBI BLAST dump or a prebuilt tree file, "
-                                    "(currently: 'pickle')."))
-@click.option('-inf', '--informat', 'informat', type=str, default="pickle", required=False,
-              multiple=False, help="Input format (currently: 'pickle').")
-@click.option('-taxid', '--taxid', 'taxids', is_flag=False, type=str, required=False,
-              multiple=True, help="Comma-separated TaxIDs or pass multiple values. Output to "
-                                  "STDOUT by default.")
-@click.option('-taxids', '--taxidinclude', 'taxidincludes', type=str, required=False,
-              multiple=True, help="Path to Taxonomy id list file used to search the Tree.")
+@click.option(
+    "-in",
+    "--infile",
+    "infile",
+    is_flag=False,
+    type=str,
+    required=True,
+    multiple=False,
+    help=(
+        "Path to input NCBI BLAST dump or a prebuilt tree file, "
+        "(currently: 'pickle')."
+    ),
+)
+@click.option(
+    "-inf",
+    "--informat",
+    "informat",
+    type=str,
+    default="pickle",
+    required=False,
+    multiple=False,
+    help="Input format (currently: 'pickle').",
+)
+@click.option(
+    "-taxid",
+    "--taxid",
+    "taxids",
+    is_flag=False,
+    type=str,
+    required=False,
+    multiple=True,
+    help="Comma-separated TaxIDs or pass multiple values. Output to "
+    "STDOUT by default.",
+)
+@click.option(
+    "-taxids",
+    "--taxidinclude",
+    "taxidincludes",
+    type=str,
+    required=False,
+    multiple=True,
+    help="Path to Taxonomy id list file used to search the Tree.",
+)
 @add_common(common_options)
-def validate(infile: str, informat: str,
-             taxids: str or None, taxidincludes: str or None,
-             log_level: str = "INFO", log_output: str = None, quiet: bool = False):
+def validate(
+    infile: str,
+    informat: str,
+    taxids: str or None,
+    taxidincludes: str or None,
+    log_level: str = "INFO",
+    log_output: str = None,
+    quiet: bool = False,
+):
     """Validates a list of TaxIDs against a Tree data structure."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
@@ -266,5 +515,5 @@ def validate(infile: str, informat: str,
     print_and_exit(str(valid))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cli()
