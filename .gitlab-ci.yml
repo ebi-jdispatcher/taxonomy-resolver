@@ -1,8 +1,8 @@
-# Author: Fábio Madeira <fmadeira@ebi.ac.uk>, 2020
-# test/run locally with
-# gitlab-runner exec docker test_pytest
-
-image: python:3.9
+---
+default:
+  image: python:3.11
+  tags:
+    - k8s-agent-runner
 
 before_script:
   - pip install --no-cache-dir -r requirements.txt
