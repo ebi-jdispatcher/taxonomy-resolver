@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "taxonomy-resolver"
+version = "0.2.1"
+description = "Taxonomy Resolver builds NCBI Taxonomy Trees and lists of Taxonomy Identifiers (TaxIDs) based on the NCBI Taxonomy Database"
+authors = ["Fábio Madeira <fmadeira@ebi.ac.uk>"]
+readme = "README.rst"
+include = ["CHANGELOG.rst"]
+license = "Apache-2.0"
+packages = [{include = "taxonresolver"}]
+classifiers = [
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Natural Language :: English",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Internet",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "License :: OSI Approved :: Apache Software License",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = ">=8.1.7"
+requests = ">=2.32.2"
+pytest = ">=8.2.1"
+pandas = ">=2.2.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
