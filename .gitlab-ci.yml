@@ -11,12 +11,14 @@ stages:
   # Unit tests
   - test_pytest
   # Install Module
-  - setup_install
+  - poetry_install
 
 test_pytest:
   stage: test_pytest
   script: pytest
 
-setup_install:
-  stage: setup_install
-  script: python setup.py install
+poetry_install:
+  stage: poetry_install
+  script: |
+    pip install poetry
+    poetry install --no-interaction --no-root
