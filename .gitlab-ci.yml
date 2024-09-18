@@ -6,6 +6,7 @@ default:
 
 before_script:
   - pip install --no-cache-dir -r requirements.txt
+  - pip install poetry
 
 stages:
   # Unit tests
@@ -20,9 +21,7 @@ test_pytest:
 
 poetry_install:
   stage: poetry_install
-  script: |
-    pip install poetry
-    poetry install --no-interaction --no-root
+  script: poetry install --no-interaction --no-root
 
 poetry_build:
   stage: poetry_build
