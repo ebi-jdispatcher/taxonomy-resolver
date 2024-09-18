@@ -12,6 +12,7 @@ stages:
   - test_pytest
   # Install Module
   - poetry_install
+  - poetry_build
 
 test_pytest:
   stage: test_pytest
@@ -22,3 +23,7 @@ poetry_install:
   script: |
     pip install poetry
     poetry install --no-interaction --no-root
+
+poetry_build:
+  stage: poetry_build
+  script: poetry build
