@@ -1,3 +1,7 @@
+**0.3.1**
+
+- Fixed the 'publishing to PyPI' action
+
 **0.3.0**
 
 - Moved to use pyproject.toml and `Poetry`_ for packaging
