@@ -4,7 +4,7 @@
 """
 Taxonomy Resolver
 
-:copyright: (c) 2020-2021.
+:copyright: (c) 2020-2024.
 :license: Apache 2.0, see LICENSE for more details.
 """
 
