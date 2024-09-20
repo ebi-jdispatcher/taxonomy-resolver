@@ -1,22 +1,28 @@
-# Author: Fábio Madeira <fmadeira@ebi.ac.uk>, 2020
-# test/run locally with
-# gitlab-runner exec docker test_pytest
-
-image: python:3.9
+---
+default:
+  image: python:3.11
+  tags:
+    - k8s-agent-runner
 
 before_script:
   - pip install --no-cache-dir -r requirements.txt
+  - pip install poetry
 
 stages:
   # Unit tests
   - test_pytest
   # Install Module
-  - setup_install
+  - poetry_install
+  - poetry_build
 
 test_pytest:
   stage: test_pytest
   script: pytest
 
-setup_install:
-  stage: setup_install
-  script: python setup.py install
+poetry_install:
+  stage: poetry_install
+  script: poetry install --no-interaction --no-root
+
+poetry_build:
+  stage: poetry_build
+  script: poetry build

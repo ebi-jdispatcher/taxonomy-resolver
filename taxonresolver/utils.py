@@ -4,36 +4,41 @@
 """
 Taxonomy Resolver
 
-:copyright: (c) 2020-2021.
+:copyright: (c) 2020-2024.
 :license: Apache 2.0, see LICENSE for more details.
 """
 
+import logging
 import os
 import sys
-import logging
-import requests
+
 import pandas as pd
+import requests
 
 
-def get_logging_level(level: str = 'INFO') -> logging:
-    if level == 'DEBUG':
+def get_logging_level(level: str = "INFO"):
+    """Sets a logging level"""
+    if level == "DEBUG":
         return logging.DEBUG
-    elif level == 'INFO':
+    elif level == "INFO":
         return logging.INFO
-    elif level == 'WARN':
+    elif level == "WARN":
         return logging.WARN
-    elif level == 'ERROR':
+    elif level == "ERROR":
         return logging.ERROR
-    elif level == 'CRITICAL':
+    elif level == "CRITICAL":
         return logging.CRITICAL
     else:
         return logging.INFO
 
 
-def load_logging(log_level: str, log_output: str = None, disabled: bool = False) -> logging:
-    logging.basicConfig(format='%(asctime)s - [%(levelname)s] %(message)s',
-                        level=get_logging_level(log_level),
-                        datefmt='%d/%m/%Y %H:%M:%S')
+def load_logging(log_level: str, log_output: str | None = None, disabled: bool = False):
+    """Loads logging, outputs to file or disables logging altogether."""
+    logging.basicConfig(
+        format="%(asctime)s - [%(levelname)s] %(message)s",
+        level=get_logging_level(log_level),
+        datefmt="%d/%m/%Y %H:%M:%S",
+    )
     if log_output:
         file_handler = logging.FileHandler(log_output)
         logging.getLogger().addHandler(file_handler)
@@ -45,12 +50,14 @@ def load_logging(log_level: str, log_output: str = None, disabled: bool = False)
 
 
 def print_and_exit(message: str) -> None:
+    """Prints a message and exits"""
     print(message)
     sys.exit()
 
 
-def validate_inputs_outputs(inputfile: str or None = None,
-                            outputfile: str or None = None) -> None:
+def validate_inputs_outputs(
+    inputfile: str | None = None, outputfile: str | None = None
+) -> None:
     """
     Checks if the passed input/output files are valid and exist.
 
@@ -61,7 +68,9 @@ def validate_inputs_outputs(inputfile: str or None = None,
 
     if inputfile:
         if not os.path.isfile(inputfile):
-            print_and_exit(f"Input file '{inputfile}' does not exist or it is not readable!")
+            print_and_exit(
+                f"Input file '{inputfile}' does not exist or it is not readable!"
+            )
 
     if outputfile:
         try:
@@ -85,7 +94,7 @@ def download_taxonomy_dump(outfile, extension="zip") -> None:
         url = "http://ftp.ebi.ac.uk/pub/databases/ncbi/taxonomy/taxdmp.zip"
     r = requests.get(url, allow_redirects=True)
     if r.ok:
-        open(outfile, 'wb').write(r.content)
+        open(outfile, "wb").write(r.content)
     else:
         print(f"Unable to Download Taxonomy Dump from {url}")
 
@@ -95,7 +104,7 @@ def split_line(line) -> list:
     return [x.strip() for x in line.split("	|")]
 
 
-def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list:
+def parse_tax_ids(inputfile: str, sep: str | None = " ", indx: int = 0) -> list:
     """
     Parses a list of TaxIDs from an input file.
     It skips lines started with '#'.
@@ -141,7 +150,7 @@ def tree_reparenting(tree: dict) -> dict:
     return tree
 
 
-def tree_traversal(node: dict or list, nodes: list, depth: int = 1) -> list:
+def tree_traversal(node: dict | list, nodes: list, depth: int = 1) -> list:
     """
     Iterate over tree using pre-order strategy. Returns a list of all nodes
     visited in order (nodes and depths).
@@ -194,7 +203,7 @@ def get_children(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :param rgt: right index based on MPTT
     :return: list of TaxIDs
     """
-    return tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values
+    return list(tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values)
 
 
 def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
@@ -206,4 +215,4 @@ def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :param rgt: right index based on MPTT
     :return: list of TaxIDs
     """
-    return tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values
+    return list(tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values)
