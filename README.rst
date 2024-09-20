@@ -117,7 +117,7 @@ Installing
 
 .. code-block:: bash
 
-  pip install taxonresolver
+  pip install taxonomy-resolver
 
 
 Getting Started
