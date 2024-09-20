@@ -17,6 +17,7 @@ import requests
 
 
 def get_logging_level(level: str = "INFO"):
+    """Sets a logging level"""
     if level == "DEBUG":
         return logging.DEBUG
     elif level == "INFO":
@@ -32,6 +33,7 @@ def get_logging_level(level: str = "INFO"):
 
 
 def load_logging(log_level: str, log_output: str | None = None, disabled: bool = False):
+    """Loads logging, outputs to file or disables logging altogether."""
     logging.basicConfig(
         format="%(asctime)s - [%(levelname)s] %(message)s",
         level=get_logging_level(log_level),
@@ -48,6 +50,7 @@ def load_logging(log_level: str, log_output: str | None = None, disabled: bool =
 
 
 def print_and_exit(message: str) -> None:
+    """Prints a message and exits"""
     print(message)
     sys.exit()
 
