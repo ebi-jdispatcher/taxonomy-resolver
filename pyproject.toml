@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "taxonomy-resolver"
-version = "0.3.1"
+version = "0.3.2"
 description = "Taxonomy Resolver builds NCBI Taxonomy Trees and lists of Taxonomy Identifiers (TaxIDs) based on the NCBI Taxonomy Database"
 authors = ["Fábio Madeira <fmadeira@ebi.ac.uk>"]
 readme = "README.rst"

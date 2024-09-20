@@ -10,7 +10,7 @@ Taxonomy Resolver
 
 __author__ = "Fábio Madeira"
 __email__ = "fmadeira@ebi.ac.uk"
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 __contributors__ = ["Fábio Madeira"]
 
 from taxonresolver.tree import TaxonResolver
