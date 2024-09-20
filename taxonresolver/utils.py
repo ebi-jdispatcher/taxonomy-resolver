@@ -16,7 +16,7 @@ import pandas as pd
 import requests
 
 
-def get_logging_level(level: str = "INFO") -> logging:
+def get_logging_level(level: str = "INFO"):
     if level == "DEBUG":
         return logging.DEBUG
     elif level == "INFO":
@@ -31,9 +31,7 @@ def get_logging_level(level: str = "INFO") -> logging:
         return logging.INFO
 
 
-def load_logging(
-    log_level: str, log_output: str = None, disabled: bool = False
-) -> logging:
+def load_logging(log_level: str, log_output: str | None = None, disabled: bool = False):
     logging.basicConfig(
         format="%(asctime)s - [%(levelname)s] %(message)s",
         level=get_logging_level(log_level),
@@ -55,7 +53,7 @@ def print_and_exit(message: str) -> None:
 
 
 def validate_inputs_outputs(
-    inputfile: str or None = None, outputfile: str or None = None
+    inputfile: str | None = None, outputfile: str | None = None
 ) -> None:
     """
     Checks if the passed input/output files are valid and exist.
@@ -103,7 +101,7 @@ def split_line(line) -> list:
     return [x.strip() for x in line.split("	|")]
 
 
-def parse_tax_ids(inputfile: str, sep: str or None = " ", indx: int = 0) -> list:
+def parse_tax_ids(inputfile: str, sep: str | None = " ", indx: int = 0) -> list:
     """
     Parses a list of TaxIDs from an input file.
     It skips lines started with '#'.
@@ -149,7 +147,7 @@ def tree_reparenting(tree: dict) -> dict:
     return tree
 
 
-def tree_traversal(node: dict or list, nodes: list, depth: int = 1) -> list:
+def tree_traversal(node: dict | list, nodes: list, depth: int = 1) -> list:
     """
     Iterate over tree using pre-order strategy. Returns a list of all nodes
     visited in order (nodes and depths).
@@ -202,7 +200,7 @@ def get_children(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :param rgt: right index based on MPTT
     :return: list of TaxIDs
     """
-    return tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values
+    return list(tree[(tree["lft"] > lft) & (tree["rgt"] < rgt)]["id"].values)
 
 
 def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
@@ -214,4 +212,4 @@ def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :param rgt: right index based on MPTT
     :return: list of TaxIDs
     """
-    return tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values
+    return list(tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values)

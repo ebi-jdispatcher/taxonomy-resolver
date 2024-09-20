@@ -116,7 +116,7 @@ def download(
     outfile: str,
     outformat: str,
     log_level: str = "INFO",
-    log_output: str = None,
+    log_output: str | None = None,
     quiet: bool = False,
 ):
     """Download the NCBI Taxonomy dump file ('taxdmp.zip')."""
@@ -208,15 +208,15 @@ def download(
 def build(
     infile: str,
     outfile: str,
-    informat: str or None,
+    informat: str | None,
     outformat: str,
-    taxidfilters: tuple = None,
+    taxidfilters: tuple | None = None,
     ignoreinvalid: bool = False,
-    sep: str = None,
+    sep: str | None = None,
     indx: int = 0,
     slimtable: bool = False,
     log_level: str = "INFO",
-    log_output: str = None,
+    log_output: str | None = None,
     quiet: bool = False,
 ):
     """Build a NCBI Taxonomy Tree data structure."""
@@ -249,7 +249,7 @@ def build(
         logging.info(f"Filtered NCBI Taxonomy with the provided filters.")
 
     # dropping unnecessary columns
-    if slimtable:
+    if slimtable and resolver.tree:
         resolver.tree.drop(["rank", "depth", "parent_id"], axis=1, inplace=True)
     resolver.write(outfile, outformat)
     logging.info(f"Wrote NCBI Taxonomy tree {outfile} in {outformat} format.")
@@ -352,18 +352,18 @@ def build(
 @add_common(common_options_parsing)
 def search(
     infile: str,
-    outfile: str or None,
+    outfile: str | None,
     informat: str,
-    taxids: str or None,
-    taxidincludes: str or None,
-    taxidsexcludes: str or None,
-    taxidexcludes: str or None,
-    taxidfilters: tuple = None,
+    taxids: str | None,
+    taxidincludes: str | None,
+    taxidsexcludes: str | None,
+    taxidexcludes: str | None,
+    taxidfilters: tuple | None = None,
     ignoreinvalid: bool = False,
-    sep: str = None,
+    sep: str | None = None,
     indx: int = 0,
     log_level: str = "INFO",
-    log_output: str = None,
+    log_output: str | None = None,
     quiet: bool = False,
 ):
     """Searches a Tree data structure and writes a list of TaxIDs."""
@@ -397,8 +397,9 @@ def search(
         for taxidinclude in taxidincludes:
             includeids.extend(parse_tax_ids(taxidinclude))
     else:
-        for taxid in taxids:
-            includeids.extend(taxid.split(","))
+        if taxids:
+            for taxid in taxids:
+                includeids.extend(taxid.split(","))
 
     excludeids = []
     if taxidexcludes:
@@ -420,12 +421,14 @@ def search(
         ignoreinvalid=ignoreinvalid,
     )
     if outfile:
-        with open(outfile, "w") as outfile:
-            outfile.write("\n".join(tax_ids))
+        with open(outfile, "w") as outf:
+            if tax_ids:
+                outf.write("\n".join(list(tax_ids)))
         logging.info(f"Wrote list of TaxIDS in {outfile}.")
     else:
         try:
-            print(",".join(tax_ids))
+            if tax_ids:
+                print(",".join(tax_ids))
         except TypeError:
             print(tax_ids)
 
@@ -478,10 +481,10 @@ def search(
 def validate(
     infile: str,
     informat: str,
-    taxids: str or None,
-    taxidincludes: str or None,
+    taxids: str | None,
+    taxidincludes: str | None,
     log_level: str = "INFO",
-    log_output: str = None,
+    log_output: str | None = None,
     quiet: bool = False,
 ):
     """Validates a list of TaxIDs against a Tree data structure."""
@@ -508,8 +511,9 @@ def validate(
             includeids.extend(parse_tax_ids(taxidinclude))
     else:
         includeids = []
-        for taxid in taxids:
-            includeids.extend(taxid.split(","))
+        if taxids:
+            for taxid in taxids:
+                includeids.extend(taxid.split(","))
     valid = resolver.validate(taxidinclude=includeids)
     logging.info(f"Validated TaxIDs in the '{infile}' tree.")
     print_and_exit(str(valid))

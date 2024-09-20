@@ -74,7 +74,7 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
 
 
 def write_tree(
-    tree: pd.DataFrame, outputfile: str, outputformat: str = "pickle"
+    tree: pd.DataFrame | None, outputfile: str, outputformat: str = "pickle"
 ) -> None:
     """
     Writes a pandas DataFrame object to file.
@@ -84,13 +84,21 @@ def write_tree(
     :param outputformat: currently "pickle" format
     :return: (side-effects) writes to file
     """
-    if outputformat == "pickle":
+    if outputformat == "pickle" and tree is not None:
         tree.to_pickle(outputfile, protocol=4)
+    # elif outputformat == "shelve":
+    #     with shelve.open(outputfile) as outfile:
+    #         outfile["tree"] = tree
+    # elif outputformat == "marshal":
+    #     with open(outputfile, 'wb') as outfile:
+    #         marshal.dump(tree, outfile)
+    # elif outputformat == "hdf5":
+    #     tree.to_hdf(outputfile, "df")
     else:
         print_and_exit(f"Output format '{outputformat}' is not valid!")
 
 
-def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
+def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame | None:
     """
     Loads a pre-existing pandas DataFrame from file.
 
@@ -100,18 +108,25 @@ def load_tree(inputfile: str, inputformat: str = "pickle") -> pd.DataFrame:
     """
     if inputformat == "pickle":
         return pd.read_pickle(inputfile)
+    # elif inputformat == "shelve":
+    #     with shelve.open(inputfile) as db:
+    #         return db["tree"]
+    # elif inputformat == "marshal":
+    #     return marshal.load(open(inputfile, "rb"))
+    # elif inputformat == "hdf5":
+    #     return pd.read_hdf(inputfile, "df")
     else:
         print_and_exit(f"Input format '{inputformat}' is not valid!")
 
 
 def filter_tree(
-    tree: pd.DataFrame,
-    filterids: list or str or None = None,
+    tree: pd.DataFrame | None,
+    filterids: list | str | None = None,
     root: str = "1",
     ignoreinvalid: bool = True,
-    sep: str = None,
+    sep: str | None = None,
     indx: int = 0,
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """
     Filters an existing pandas DataFrame based on a List of TaxIDs.
 
@@ -129,6 +144,7 @@ def filter_tree(
         "Some of the provided TaxIDs are not valid or not found " "in the built Tree."
     )
 
+    taxids_filter = set()
     if type(filterids) is list:
         taxids_filter = set(filterids)
     elif type(filterids) is str:
@@ -136,31 +152,31 @@ def filter_tree(
 
     if ignoreinvalid or validate_taxids(tree, taxids_filter):
         # if ignoring invalid, we should still only return TaxIDs that exist in the Tree
-        taxids_filter = taxids_filter.intersection(set(tree["id"].values))
-        # get a subset dataset sorted (by 'lft')
-        subset = tree[tree["id"].isin(taxids_filter)].sort_values("lft")
-        nested_sets = get_nested_sets(subset)
-        for l, r in nested_sets:
-            taxids = get_children(tree, l, r)
-            taxids_filter.update(taxids)
-            # expand taxids_filter with parents of the selected node
-            taxids = get_parents(tree, l, r)
-            taxids_filter.update(taxids)
-        df = tree[tree["id"].isin(taxids_filter)].reset_index()
+        if tree is not None:
+            taxids_filter = taxids_filter.intersection(set(tree["id"].values))
+            # get a subset dataset sorted (by 'lft')
+            subset = tree[tree["id"].isin(taxids_filter)].sort_values("lft")
+            nested_sets = get_nested_sets(subset)
+            for l, r in nested_sets:
+                taxids = get_children(tree, l, r)
+                taxids_filter.update(taxids)
+                # expand taxids_filter with parents of the selected node
+                taxids = get_parents(tree, l, r)
+                taxids_filter.update(taxids)
+            return tree[tree["id"].isin(taxids_filter)].reset_index()
     else:
         print_and_exit(message)
-    return df
 
 
 def search_taxids(
-    tree: pd.DataFrame,
-    includeids: list or str,
-    excludeids: list or str or None = None,
-    filterids: list or str or None = None,
+    tree: pd.DataFrame | None,
+    includeids: list | str,
+    excludeids: list | str | None = None,
+    filterids: list | str | None = None,
     ignoreinvalid: bool = True,
-    sep: str = None,
+    sep: str | None = None,
     indx: int = 0,
-) -> list or set:
+) -> list | set | None:
     """
     Searches an existing tree pandas DataFrame and produces a list of TaxIDs.
     Search is performed based on a list of TaxIDs (includedids). A search is also
@@ -186,40 +202,47 @@ def search_taxids(
     )
 
     # find all the children nodes of the list of TaxIDs to be included in the search
+    taxids_include = set()
+    taxids_found = set()
     if type(includeids) is list:
         taxids_include = set(includeids)
     elif type(includeids) is str:
         taxids_include = set(parse_tax_ids(includeids))
     if ignoreinvalid or validate_taxids(tree, taxids_include):
         # if ignoring invalid, we should still only return TaxIDs that exist in the Tree
-        taxids_found = taxids_include.intersection(set(tree["id"].values))
-        # get a subset dataset sorted (by 'lft')
-        subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
-        nested_sets = get_nested_sets(subset)
-        for l, r in nested_sets:
-            taxids = get_children(tree, l, r)
-            taxids_found.update(taxids)
+        if tree is not None:
+            taxids_found = taxids_include.intersection(set(tree["id"].values))
+            # get a subset dataset sorted (by 'lft')
+            subset = tree[tree["id"].isin(taxids_found)].sort_values("lft")
+            nested_sets = get_nested_sets(subset)
+            for l, r in nested_sets:
+                taxids = get_children(tree, l, r)
+                taxids_found.update(taxids)
     else:
         print_and_exit(message)
 
     # find all the children nodes of the list of TaxIDs to be excluded from the search
     if excludeids:
+        taxids_exclude = set()
         if type(excludeids) is list:
             taxids_exclude = set(excludeids)
         elif type(excludeids) is str:
             taxids_exclude = set(parse_tax_ids(excludeids))
         if ignoreinvalid or validate_taxids(tree, taxids_exclude):
-            subset = tree[tree["id"].isin(taxids_exclude)].sort_values("lft")
-            nested_sets = get_nested_sets(subset)
-            for l, r in nested_sets:
-                taxids = get_children(tree, l, r)
-                taxids_exclude.update(taxids)
-            taxids_found = taxids_found.difference(taxids_exclude)
+            if tree is not None:
+                subset = tree[tree["id"].isin(taxids_exclude)].sort_values("lft")
+                nested_sets = get_nested_sets(subset)
+                for l, r in nested_sets:
+                    taxids = get_children(tree, l, r)
+                    taxids_exclude.update(taxids)
+                if taxids_found:
+                    taxids_found = taxids_found.difference(taxids_exclude)
         else:
             print_and_exit(message)
 
     # keep only TaxIDs that are in the provided list of TaxIDs to filter with
     if filterids:
+        taxids_filter = set()
         if type(filterids) is list:
             taxids_filter = set(filterids)
         elif type(filterids) is str:
@@ -231,7 +254,7 @@ def search_taxids(
     return taxids_found
 
 
-def validate_taxids(tree: pd.DataFrame, validateids: list or set or str) -> bool:
+def validate_taxids(tree: pd.DataFrame | None, validateids: list | set | str) -> bool:
     """
     Checks if TaxIDs are in the list and in the Tree.
 
@@ -239,7 +262,7 @@ def validate_taxids(tree: pd.DataFrame, validateids: list or set or str) -> bool
     :param validateids: list of TaxIDs or Path to file with TaxIDs to validate
     :return: boolean
     """
-
+    taxids_validate = set()
     if type(validateids) is list:
         taxids_validate = set(validateids)
     elif type(validateids) is set:
@@ -247,9 +270,10 @@ def validate_taxids(tree: pd.DataFrame, validateids: list or set or str) -> bool
     elif type(validateids) is str:
         taxids_validate = set(parse_tax_ids(validateids))
 
-    taxids_valid = taxids_validate.intersection(set(tree["id"].values))
-    if len(taxids_valid) == len(taxids_validate):
-        return True
+    if tree is not None:
+        taxids_valid = taxids_validate.intersection(set(tree["id"].values))
+        if len(taxids_valid) == len(taxids_validate):
+            return True
     return False
 
 
@@ -296,7 +320,7 @@ class TaxonResolver(object):
         taxidfilter=None,
         ignoreinvalid=True,
         **kwargs,
-    ) -> list or set or None:
+    ) -> list | set | None:
         """Search a Tree based on a list of TaxIDs."""
         return search_taxids(
             self.tree, taxidinclude, taxidexclude, taxidfilter, ignoreinvalid, **kwargs
