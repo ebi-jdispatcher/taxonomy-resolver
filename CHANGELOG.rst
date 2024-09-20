@@ -1,3 +1,8 @@
+**0.3.0**
+
+- Moved to use pyproject.toml and `Poetry`_ for packaging
+- Improved type hint annotations 
+
 **0.2.1**
 
 - Re-added the "filter" option to the `TaxonResolver` class and CLI
@@ -61,3 +66,6 @@
 **0.0.1**
 
 - Started development
+
+.. links
+.. _Poetry: https://python-poetry.org/
