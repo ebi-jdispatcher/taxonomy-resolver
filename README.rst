@@ -178,12 +178,11 @@ CLI
 ---
 
 Explore the CLI and each command by running
-``python taxonomy_resolver.py (COMMAND) --help``. If Taxonomy Resolver was installed with
-``python setup.py install``, then simply run ``taxonomy_resolver --help``:
+``taxonomy-resolver (COMMAND) --help``
 
 .. code-block:: bash
 
-  Usage: taxonomy_resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
+  Usage: taxonomy-resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
                               [ARGS]...]...
 
     Taxonomy Resolver: Build a NCBI Taxonomy Tree, validate and search TaxIDs.
@@ -203,39 +202,39 @@ Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py download -out taxdmp.zip
+  taxonomy-resolver download -out taxdmp.zip
 
 
 Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in taxdmp.zip -out tree.pickle
+  taxonomy-resolver build -in taxdmp.zip -out tree.pickle
 
 Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
+  taxonomy-resolver build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt
+  taxonomy-resolver search -in tree.pickle -taxids testdata/taxids_search.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs (included TaxIDs), exclude TaxIDs from the search (excluded TaxIDs), and filter the final result to only those TaxIDs that are available in the list of filter TaxIDs (filtered TaxIDs):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt -taxidse testdata/taxids_exclude.txt -taxidsf testdata/taxids_filter.txt -out taxids_list.txt
+  taxonomy-resolver search -in tree.pickle -taxids testdata/taxids_search.txt -taxidse testdata/taxids_exclude.txt -taxidsf testdata/taxids_filter.txt -out taxids_list.txt
 
 
 Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py validate -in tree.pickle -taxids testdata/taxids_validate.txt
+  taxonomy-resolver validate -in tree.pickle -taxids testdata/taxids_validate.txt
 
 
 Bug Tracking
@@ -251,7 +250,7 @@ See release notes on `CHANGELOG.rst`_
 Acknowledgments
 ===============
 
-I would like to thanks Adrian Tivey for insightful discussions.
+I would like to thank Adrian Tivey for insightful discussions.
 
 License
 =======

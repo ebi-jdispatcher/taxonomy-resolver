@@ -37,3 +37,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.poetry.scripts]
+taxonomy-resolver = "taxonomyresolver.cli:cli"
