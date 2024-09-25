@@ -95,12 +95,12 @@ The resulting tree can be represented in tabular form:
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.9+ (recommended version 3.11). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
+Installation requires `Python`_ 3.10+ (recommended version 3.11). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
 ------------------
 
-Dependencies for the Python tools developed here, are the typical Python stack (3.9+ and pip). A good approach is to set a virtual environment:
+Dependencies for the Python tools developed here, are the typical Python stack (3.10+ and pip). A good approach is to set a virtual environment:
 
 .. code-block:: bash
 
