@@ -1,3 +1,12 @@
+|PyPI license| |PyPI version|
+
+.. |PyPI version| image:: https://img.shields.io/pypi/v/taxonomy-resolver.svg?label=PyPI%20version&color=blue
+   :target: https://pypi.org/project/taxonomy-resolver/
+
+.. |PyPI license| image:: https://img.shields.io/pypi/l/taxonomy-resolver.svg?label=License&color=blue
+   :target: https://pypi.org/project/taxonomy-resolver/
+
+
 #################
 Taxonomy Resolver
 #################
