@@ -12,8 +12,8 @@ import os
 
 import pytest
 
-from taxonresolver import TaxonResolver
-from taxonresolver.utils import load_logging
+from taxonomyresolver import TaxonResolver
+from taxonomyresolver.utils import load_logging
 
 
 @pytest.fixture

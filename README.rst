@@ -132,7 +132,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
 
 .. code-block:: python
 
-  from taxonresolver import TaxonResolver
+  from taxonomyresolver import TaxonResolver
 
   resolver = TaxonResolver()
 
@@ -160,7 +160,7 @@ When a Taxonomy Tree is already available one can simply load it with ``resolver
 
 .. code-block:: python
 
-  from taxonresolver import TaxonResolver
+  from taxonomyresolver import TaxonResolver
 
   resolver = TaxonResolver()
 

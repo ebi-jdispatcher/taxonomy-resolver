@@ -13,7 +13,7 @@ import zipfile
 
 import pandas as pd
 
-from taxonresolver.utils import (
+from taxonomyresolver.utils import (
     download_taxonomy_dump,
     get_children,
     get_nested_sets,
