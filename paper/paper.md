@@ -1,120 +1,64 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'Taxonomy Resolver: A Python package for building and filtering taxonomy trees'
 tags:
   - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - Taxonomy
+  - Tree
+  - Hierarchy
+  - NCBI Taxonomy
+  - NCBI BLAST+
+  - Nested Set Model
+  - Modified Preorder Tree Traversal
 authors:
-  - name: Adrian M. Price-Whelan
-    orcid: 0000-0000-0000-0000
-    equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 3
-  - given-names: Ludwig
-    dropping-particle: van
-    surname: Beethoven
-    affiliation: 3
+  - name: Fábio Madeira
+    orcid: 0000-0001-8728-9449
+    corresponding: true
+    affiliation: 1
+  - name: Ania Niewielska
+    orcid: 0000-0003-0989-3389
+    affiliation: 1
+  - name: Sarah Butcher
+    orcid: 0000-0002-4494-5124
+    affiliation: 1
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, USA
+ - name: European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK
    index: 1
    ror: 00hx57361
- - name: Institution Name, Country
-   index: 2
- - name: Independent Researcher, Country
-   index: 3
-date: 13 August 2017
+date: 26 September 2024
 bibliography: paper.bib
 
-# Optional fields if submitting to a AAS journal too, see this blog post:
-# https://blog.joss.theoj.org/2018/12/a-new-collaboration-with-aas-publishing
-aas-doi: 10.3847/xxxxx <- update this with the DOI from AAS once you know it.
-aas-journal: Astrophysical Journal <- The name of the AAS journal.
 ---
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+Taxonomy classification provides an important source of information for studying biological systems. It is a key component for many areas of biological sciences research, particularly genetics, evolutionary biology, biodiversity and conservation [@sandall_globally_2023]. Common ancestry, homology and conservation of sequence and structure are all central ideas in biology that are directly related to the evolutionary history of any group of organisms [@ochoterena_search_2019]. The National Center for Biotechnology Information (NCBI) Taxonomy [@schoch_ncbi_2020] provides a curated classification and nomenclature for all the organisms in the public sequence databases, across the taxonomic ranks (i.e. Domain, Kingdom, Phylum, Class, Order, Family, Genus and Species). 
+
+Here we describe ``Taxonomy Resolver``, a Python module and command-line interface (CLI) application for building and filtering taxonomy trees based on the NCBI Taxonomy. Taxonomy Resolver streamlines the process of manipulating trees, enabling fast tree traversal, searching and filtering.
 
 # Statement of need
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+The NCBI Taxonomy Database [@schoch_ncbi_2020] provides a hierarchically arranged list of organisms across all domains of life found in the sequence databases. Tree filtering, i.e. generation of tree subsets, referred to as subtrees, has various applications for sequence analysis, particularly for reducing the search space of sequence similarity searching algorithms. A sequence dataset composed of sequences from diverse taxa can be more quickly searched if only a subset of sequences which belong to taxonomies of interest are selected. 
 
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
+The NCBI BLAST+ suite is the most widely used toolset in bioinformatics for performing sequence similarity search (4). The suite provides a Bash script (`get_species_taxids.sh`) to convert NCBI Taxonomy identifiers (TaxIDs) or text into TaxIDs suitable for filtering sequence searches. While this is a useful utility, it only works with sequences submitted to GenBank or other NCBI-hosted databases, and more importantly, it relies on making API calls via Entrez Direct (EDirect) [@kans_entrez_2024]. EDirect requires an internet connection and it does not scale well when working with large sequence datasets. Other general-purpose tree libraries exist for Python (e.g. ``anytree`` [@anytree] and ``bigtree`` [@bigtree]) and R (e.g. ``ggtree`` [@yu_ggtree_2017]), but they do not support the core features provided by Taxonomy Resolver or focus mainly on tree visualisation. The development of Taxonomy Resolver started in 2020 and aims to provide user-friendly interfaces for working directly with the NCBI Taxonomy hierarchical dataset.
 
-# Mathematics
+# Implementation
 
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
+Taxonomy Resolver has been developed with simplicity in mind and it can be used both as a standard Python module or as a CLI application. The main tasks performed by Taxonomy Resolver are:
 
-Double dollars make self-standing equations:
+* **downloading** the NCBI Taxonomy classification hierarchy “dump” from the NCBI FTP server
+* **building** complete taxonomy tree data structures or partial trees, i.e. subtrees
+* **searching** particular TaxIDs at any level of the taxonomy hierarchy, performing fast tree traversal
+* **validating** TaxIDs against the NCBI Taxonomy or any given subtree
+* **generating** taxonomy lists that compose any subtree, at any level of the taxonomy hierarchy
+* **filtering** a tree based on the inclusion and/or exclusion of certain TaxIDs
+* **writing** and loading tree data structures using Python’s object serialisation
 
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
+A taxonomy tree is a hierarchical structure that can be seen as a collection of deeply nested containers - nodes connected by edges, following the hierarchy, from the parent node - the root, all the way down to the children nodes - the leaves. An object-oriented programming (OOP) tree implementation based on recursion does not typically scale well for large trees, such as the NCBI Taxonomy, which is composed of >2.6 million nodes. To improve performance, Taxonomy Resolver represents the tree structure following the Nested Set Model, which is a technique developed to represent hierarchical data in relational databases lacking recursion capabilities. This allows for efficient and inexpensive querying of parent-child relationships. The full tree is traversed following the Modified Preorder Tree Traversal (MPTT) strategy [@celko_chapter_2004], in which each node in the tree is visited twice. In a preorder traversal, the root node is visited first, then recursively a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order, until every node has been visited. The modified strategy allows capturing the 'left' and 'right' (*lft* and *rgt*, respectively) boundaries of each subtree, which are stored as two additional attributes. Finding a subtree is as simple as searching for the nodes where $lft > Node's lft$ and $rgt < Node's rgt$. Likewise, finding the full path to a node is as simple as searching for the nodes where $lft < Node's lft$ and $rgt > Node's rgt$. Traversal attributes, depth and node indexes are captured for each tree node and are stored as a pandas DataFrame [@team_pandas-devpandas_2024].
 
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+In conclusion, Taxonomy Resolver has been developed to take advantage of the Nested Set Model tree structure, so it can perform fast validation and create lists of taxa that compose a particular subtree. Inclusion and exclusion lists can also be seamlessly used to produce subset trees with wide applications, particularly for sequence similarity search.
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+We would like to thank past and current members of the EMBL-EBI for their continued support. We would like to also thank EMBL and its funders.
 
 # References
