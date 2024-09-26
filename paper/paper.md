@@ -14,6 +14,15 @@ authors:
     orcid: 0000-0001-8728-9449
     corresponding: true
     affiliation: 1
+  - name: Nandana Madhusoodanan
+    orcid: 0000-0001-5004-152X
+    affiliation: 1
+  - name: Alberto Eusebi
+    orcid: 0000-0001-5179-7724
+    affiliation: 1
+  - name: Joonheung Lee
+    orcid: 0000-0002-5760-2761
+    affiliation: 1
   - name: Ania Niewielska
     orcid: 0000-0003-0989-3389
     affiliation: 1
@@ -21,9 +30,10 @@ authors:
     orcid: 0000-0002-4494-5124
     affiliation: 1
 affiliations:
- - name: 'European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK'
-   index: 1
-   ror: 02catss52
+  - name: | 
+      European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), 
+      Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK
+    index: 1
 date: 26 September 2024
 bibliography: paper.bib
 
@@ -53,7 +63,7 @@ Taxonomy Resolver has been developed with simplicity in mind and it can be used 
 * **filtering** a tree based on the inclusion and/or exclusion of certain TaxIDs
 * **writing and loading** tree data structures using Python’s object serialisation
 
-A taxonomy tree is a hierarchical structure that can be seen as a collection of deeply nested containers - nodes connected by edges, following the hierarchy, from the parent node - the root, all the way down to the children nodes - the leaves. An object-oriented programming (OOP) tree implementation based on recursion does not typically scale well for large trees, such as the NCBI Taxonomy, which is composed of >2.6 million nodes. To improve performance, Taxonomy Resolver represents the tree structure following the Nested Set Model, which is a technique developed to represent hierarchical data in relational databases lacking recursion capabilities. This allows for efficient and inexpensive querying of parent-child relationships. The full tree is traversed following the Modified Preorder Tree Traversal (MPTT) strategy [@celko_chapter_2004], in which each node in the tree is visited twice. In a preorder traversal, the root node is visited first, then recursively a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order, until every node has been visited. The modified strategy allows capturing the 'left' and 'right' ($lft$ and $rgt$, respectively) boundaries of each subtree, which are stored as two additional attributes. Finding a subtree is as simple as searching for the nodes of interest where $lft > node's\ \ lft$ and $rgt < node's\ \ rgt$. Likewise, finding the full path to a node is as simple as searching for the nodes where $lft < node's\ \ lft$ and $rgt > node's\ \ rgt$. Traversal attributes, depth and node indexes are captured for each tree node and are stored as a pandas DataFrame [@pandas_2024].
+A taxonomy tree is a hierarchical structure that can be seen as a collection of deeply nested containers - nodes connected by edges, following the hierarchy, from the parent node - the root, all the way down to the children nodes - the leaves. An object-oriented programming (OOP) tree implementation based on recursion does not typically scale well for large trees, such as the NCBI Taxonomy, which is composed of >2.6 million nodes. To improve performance, Taxonomy Resolver represents the tree structure following the Nested Set Model, which is a technique developed to represent hierarchical data in relational databases lacking recursion capabilities. This allows for efficient and inexpensive querying of parent-child relationships. The full tree is traversed following the Modified Preorder Tree Traversal (MPTT) strategy [@celko_chapter_2004], in which each node in the tree is visited twice. In a preorder traversal, the root node is visited first, then recursively a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order, until every node has been visited. The modified strategy allows capturing the 'left' and 'right' ($lft$ and $rgt$, respectively) boundaries of each subtree, which are stored as two additional attributes. Finding a subtree is as simple as searching for the nodes of interest where $lft > node's\ lft$ and $rgt < node's\ rgt$. Likewise, finding the full path to a node is as simple as searching for the nodes where $lft < node's\ lft$ and $rgt > node's\ rgt$. Traversal attributes, depth and node indexes are captured for each tree node and are stored as a pandas DataFrame [@pandas_2024].
 
 In conclusion, Taxonomy Resolver has been developed to take advantage of the Nested Set Model tree structure, so it can perform fast validation and create lists of taxa that compose a particular subtree. Inclusion and exclusion lists can also be seamlessly used to produce subset trees with wide applications, particularly for sequence similarity search.
 
