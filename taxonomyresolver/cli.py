@@ -10,8 +10,8 @@ Taxonomy Resolver
 
 import click
 
-from taxonresolver import TaxonResolver, __version__
-from taxonresolver.utils import (
+from taxonomyresolver import TaxonResolver, __version__
+from taxonomyresolver.utils import (
     load_logging,
     parse_tax_ids,
     print_and_exit,

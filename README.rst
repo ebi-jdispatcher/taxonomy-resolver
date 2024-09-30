@@ -1,3 +1,12 @@
+|PyPI license| |PyPI version|
+
+.. |PyPI version| image:: https://img.shields.io/pypi/v/taxonomy-resolver.svg?label=PyPI%20version&color=blue
+   :target: https://pypi.org/project/taxonomy-resolver/
+
+.. |PyPI license| image:: https://img.shields.io/pypi/l/taxonomy-resolver.svg?label=License&color=blue
+   :target: https://pypi.org/project/taxonomy-resolver/
+
+
 #################
 Taxonomy Resolver
 #################
@@ -95,12 +104,12 @@ The resulting tree can be represented in tabular form:
 Dependencies and Installation
 =============================
 
-Installation requires `Python`_ 3.9+ (recommended version 3.11). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
+Installation requires `Python`_ 3.10+ (recommended version 3.11). Additional requirements, which will be downloaded and installed automatically. See full list of dependencies in `requirements.txt`_
 
 Python Environment
 ------------------
 
-Dependencies for the Python tools developed here, are the typical Python stack (3.9+ and pip). A good approach is to set a virtual environment:
+Dependencies for the Python tools developed here, are the typical Python stack (3.10+ and pip). A good approach is to set a virtual environment:
 
 .. code-block:: bash
 
@@ -132,7 +141,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
 
 .. code-block:: python
 
-  from taxonresolver import TaxonResolver
+  from taxonomyresolver import TaxonResolver
 
   resolver = TaxonResolver()
 
@@ -150,6 +159,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
   # Get a list of children TaxIDs that compose a set of TaxIDs
   searchfile = "taxids_search.txt"
   tax_ids = resolver.search(searchfile)
+
   # Write the TaxIDs to a file
   taxidsfile = "taxids_list.txt"
   with open(outfile, "w") as outfile:
@@ -160,7 +170,7 @@ When a Taxonomy Tree is already available one can simply load it with ``resolver
 
 .. code-block:: python
 
-  from taxonresolver import TaxonResolver
+  from taxonomyresolver import TaxonResolver
 
   resolver = TaxonResolver()
 
@@ -177,13 +187,11 @@ When a Taxonomy Tree is already available one can simply load it with ``resolver
 CLI
 ---
 
-Explore the CLI and each command by running
-``python taxonomy_resolver.py (COMMAND) --help``. If Taxonomy Resolver was installed with
-``python setup.py install``, then simply run ``taxonomy_resolver --help``:
+Explore the CLI by running ``taxonomy-resolver (COMMAND) --help``
 
 .. code-block:: bash
 
-  Usage: taxonomy_resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
+  Usage: taxonomy-resolver [OPTIONS] COMMAND1 [ARGS]... [COMMAND2
                               [ARGS]...]...
 
     Taxonomy Resolver: Build a NCBI Taxonomy Tree, validate and search TaxIDs.
@@ -199,44 +207,74 @@ Explore the CLI and each command by running
     validate  Validates a list of TaxIDs against a Tree data structure.
 
 
+Additional help is provided for each command, for example, running ``taxonomy-resolver (command) --help``, returns:
+
+.. code-block:: bash
+
+  Usage: taxonomy-resolver search [OPTIONS]
+
+    Searches a Tree data structure and writes a list of TaxIDs.
+
+  Options:
+    -in, --infile TEXT             Path to input NCBI BLAST dump or a prebuilt tree file, (currently: 'pickle').  [required]
+    -out, --outfile TEXT           Path to output file.
+    -inf, --informat TEXT          Input format (currently: 'pickle').
+    -taxid, --taxid TEXT           Comma-separated TaxIDs or pass multiple values. Output to STDOUT by default, unless an output file is provided.
+    -taxids, --taxidinclude TEXT   Path to Taxonomy id list file used to search the Tree.
+    -taxidexc, --taxidexc TEXT     Comma-separated TaxIDs or pass multiple values.
+    -taxidse, --taxidexclude TEXT  Path to Taxonomy id list file excluded from the search.
+    -taxidsf, --taxidfilter TEXT   Path to Taxonomy id list file used to filter the search.
+    -ignore, --ignoreinvalid       Ignores invalid TaxIDs.
+    -level, --log_level TEXT       Log level to use. Expects: 'DEBUG', 'INFO', 'WARN', 'ERROR', and 'CRITICAL'.
+    -l, --log_output TEXT          File name to be used to writing logging.
+    --quiet                        Disables logging.
+    -sep, --sep TEXT               String Separator to use.
+    -indx, --indx INTEGER          String positional index to use (starts with 0).
+    -h, --help                     Show this message and exit
+
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py download -out taxdmp.zip
+  taxonomy-resolver download -out taxdmp.zip
 
 
 Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in taxdmp.zip -out tree.pickle
+  taxonomy-resolver build -in taxdmp.zip -out tree.pickle
 
 Filtering an existing Tree structure in ``pickle`` format by passing a file containing a list of TaxIDs, and saving it in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
+  taxonomy-resolver build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt
+  taxonomy-resolver search -in tree.pickle -taxids testdata/taxids_search.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs (included TaxIDs), exclude TaxIDs from the search (excluded TaxIDs), and filter the final result to only those TaxIDs that are available in the list of filter TaxIDs (filtered TaxIDs):
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py search -in tree.pickle -taxids testdata/taxids_search.txt -taxidse testdata/taxids_exclude.txt -taxidsf testdata/taxids_filter.txt -out taxids_list.txt
+  taxonomy-resolver search -in tree.pickle -taxids testdata/taxids_search.txt -taxidse testdata/taxids_exclude.txt -taxidsf testdata/taxids_filter.txt -out taxids_list.txt
 
 
 Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
 
 .. code-block:: bash
 
-  python taxonomy-resolver.py validate -in tree.pickle -taxids testdata/taxids_validate.txt
+  taxonomy-resolver validate -in tree.pickle -taxids testdata/taxids_validate.txt
 
+
+Contributing
+============
+
+See the `CONTRIBUTING.rst` for more information about contributing to Taxonomy Resolver.
 
 Bug Tracking
 ============
@@ -251,7 +289,7 @@ See release notes on `CHANGELOG.rst`_
 Acknowledgments
 ===============
 
-I would like to thanks Adrian Tivey for insightful discussions.
+I would like to thank Adrian Tivey for insightful discussions.
 
 License
 =======
@@ -267,5 +305,6 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _CHANGELOG.rst: CHANGELOG.rst
+.. _CONTRIBUTING.rst: CONTRIBUTING.rst
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
 .. _EMBL-EBI: https://www.ebi.ac.uk/
