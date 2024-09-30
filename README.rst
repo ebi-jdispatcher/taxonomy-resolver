@@ -159,6 +159,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
   # Get a list of children TaxIDs that compose a set of TaxIDs
   searchfile = "taxids_search.txt"
   tax_ids = resolver.search(searchfile)
+
   # Write the TaxIDs to a file
   taxidsfile = "taxids_list.txt"
   with open(outfile, "w") as outfile:
@@ -186,8 +187,7 @@ When a Taxonomy Tree is already available one can simply load it with ``resolver
 CLI
 ---
 
-Explore the CLI and each command by running
-``taxonomy-resolver (COMMAND) --help``
+Explore the CLI by running ``taxonomy-resolver (COMMAND) --help``
 
 .. code-block:: bash
 
@@ -206,6 +206,31 @@ Explore the CLI and each command by running
     search    Searches a Tree data structure and writes a list of TaxIDs.
     validate  Validates a list of TaxIDs against a Tree data structure.
 
+
+Additional help is provided for each command, for example, running ``taxonomy-resolver (command) --help``, returns:
+
+.. code-block:: bash
+
+  Usage: taxonomy-resolver search [OPTIONS]
+
+    Searches a Tree data structure and writes a list of TaxIDs.
+
+  Options:
+    -in, --infile TEXT             Path to input NCBI BLAST dump or a prebuilt tree file, (currently: 'pickle').  [required]
+    -out, --outfile TEXT           Path to output file.
+    -inf, --informat TEXT          Input format (currently: 'pickle').
+    -taxid, --taxid TEXT           Comma-separated TaxIDs or pass multiple values. Output to STDOUT by default, unless an output file is provided.
+    -taxids, --taxidinclude TEXT   Path to Taxonomy id list file used to search the Tree.
+    -taxidexc, --taxidexc TEXT     Comma-separated TaxIDs or pass multiple values.
+    -taxidse, --taxidexclude TEXT  Path to Taxonomy id list file excluded from the search.
+    -taxidsf, --taxidfilter TEXT   Path to Taxonomy id list file used to filter the search.
+    -ignore, --ignoreinvalid       Ignores invalid TaxIDs.
+    -level, --log_level TEXT       Log level to use. Expects: 'DEBUG', 'INFO', 'WARN', 'ERROR', and 'CRITICAL'.
+    -l, --log_output TEXT          File name to be used to writing logging.
+    --quiet                        Disables logging.
+    -sep, --sep TEXT               String Separator to use.
+    -indx, --indx INTEGER          String positional index to use (starts with 0).
+    -h, --help                     Show this message and exit
 
 Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
 
@@ -246,6 +271,11 @@ Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
   taxonomy-resolver validate -in tree.pickle -taxids testdata/taxids_validate.txt
 
 
+Contributing
+============
+
+See the `CONTRIBUTING.rst` for more information about contributing to Taxonomy Resolver.
+
 Bug Tracking
 ============
 
@@ -275,5 +305,6 @@ Apache License 2.0. See `license`_ for details.
 .. _NCBI Taxonomy: https://www.ncbi.nlm.nih.gov/taxonomy
 .. _NCBI ftp server: https://ftp.ncbi.nih.gov/pub/taxonomy/
 .. _CHANGELOG.rst: CHANGELOG.rst
+.. _CONTRIBUTING.rst: CONTRIBUTING.rst
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
 .. _EMBL-EBI: https://www.ebi.ac.uk/
