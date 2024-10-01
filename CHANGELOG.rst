@@ -1,3 +1,10 @@
+**1.0.0**
+
+- First major release 🎉
+- Updates to `README.rst`_
+- Added `CONTRIBUTING.rst`_
+- Renamed module to ``taxonomyresolver``
+
 **0.3.2**
 
 - Updates README
@@ -77,3 +84,5 @@
 
 .. links
 .. _Poetry: https://python-poetry.org/
+.. _CONTRIBUTING.rst: CONTRIBUTING.rst
+.. _README.rst: README.rst
