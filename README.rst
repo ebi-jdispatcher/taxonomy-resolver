@@ -274,7 +274,7 @@ Validating a list of TaxIDs against a Tree data structure in ``pickle`` format:
 Contributing
 ============
 
-See the `CONTRIBUTING.rst` for more information about contributing to Taxonomy Resolver.
+See `CONTRIBUTING.rst`_ for more information about contributing to Taxonomy Resolver.
 
 Bug Tracking
 ============
