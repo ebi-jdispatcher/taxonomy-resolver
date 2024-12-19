@@ -1,4 +1,4 @@
-|PyPI license| |PyPI version|
+|PyPI license| |PyPI version| |JOSS status|
 
 .. |PyPI version| image:: https://img.shields.io/pypi/v/taxonomy-resolver.svg?label=PyPI%20version&color=blue
    :target: https://pypi.org/project/taxonomy-resolver/
@@ -6,6 +6,8 @@
 .. |PyPI license| image:: https://img.shields.io/pypi/l/taxonomy-resolver.svg?label=License&color=blue
    :target: https://pypi.org/project/taxonomy-resolver/
 
+.. |JOSS status| image:: https://joss.theoj.org/papers/f4753608becbcdb391b48ee95f389400/status.svg
+   :target: https://joss.theoj.org/papers/f4753608becbcdb391b48ee95f389400
 
 #################
 Taxonomy Resolver
