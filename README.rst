@@ -251,7 +251,7 @@ Filtering an existing Tree structure in ``pickle`` format by passing a file cont
 
 .. code-block:: bash
 
-  taxonomy-resolver build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidf testdata/taxids_filter.txt
+  taxonomy-resolver build -in tree.pickle -inf pickle -out tree_filtered.pickle -outf pickle -taxidsf testdata/taxids_filter.txt
 
 Load a previously built Tree data structure in ``pickle`` format and generating a list of TaxIDs that compose the hierarchy based on list of TaxIDs:
 
