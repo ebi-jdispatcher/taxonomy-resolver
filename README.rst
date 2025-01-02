@@ -241,7 +241,7 @@ Getting the NCBI Taxonomy Data from the `NCBI ftp server`_:
   taxonomy-resolver download -out taxdmp.zip
 
 
-Building a Tree structure from the ``taxdmp.zip`` file and saving it in JSON (or alternatively in ``pickle`` format):
+Building a Tree structure from the ``taxdmp.zip`` file and saving it in the ``pickle`` format:
 
 .. code-block:: bash
 
