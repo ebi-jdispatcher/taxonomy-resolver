@@ -141,7 +141,7 @@ def filter_tree(
     """
 
     message = (
-        "Some of the provided TaxIDs are not valid or not found " "in the built Tree."
+        "Some of the provided TaxIDs are not valid or not found in the built Tree."
     )
 
     taxids_filter = set()
@@ -198,7 +198,7 @@ def search_taxids(
     """
 
     message = (
-        "Some of the provided TaxIDs are not valid or not found " "in the built Tree."
+        "Some of the provided TaxIDs are not valid or not found in the built Tree."
     )
 
     # find all the children nodes of the list of TaxIDs to be included in the search
@@ -304,7 +304,7 @@ class TaxonResolver(object):
         """Re-build a minimal Tree based on the TaxIDs provided."""
         if not type(self.tree) is pd.DataFrame:
             message = (
-                "The Taxonomy Tree needs to be built " "before 'filter' can be called."
+                "The Taxonomy Tree needs to be built before 'filter' can be called."
             )
             print_and_exit(message)
         self.tree = filter_tree(self.tree, taxidfilter, **kwargs)
