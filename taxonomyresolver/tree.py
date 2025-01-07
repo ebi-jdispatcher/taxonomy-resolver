@@ -12,6 +12,7 @@ import io
 import zipfile
 
 import pandas as pd
+from tqdm import tqdm
 
 from taxonomyresolver.utils import (
     download_taxonomy_dump,
@@ -43,7 +44,9 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
             dmp = taxdmp.open("nodes.dmp")
     else:
         dmp = open(inputfile, "rb")
-    for line in io.TextIOWrapper(dmp, encoding="unicode_escape"):
+    for line in tqdm(
+        io.TextIOWrapper(dmp, encoding="unicode_escape"), desc="Reading tree dump"
+    ):
         fields = split_line(line)
         tree[fields[0]] = {"id": fields[0], "parent_id": fields[1], "rank": fields[2]}
     dmp.close()
@@ -54,7 +57,7 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
     nodes = []
     tree_traversal(tree[root], nodes)
     nested_set, visited, counter = [], {}, -1
-    for i, node in enumerate(nodes):
+    for i, node in tqdm(enumerate(nodes), total=len(tree), desc="Building tree"):
         taxid, depth = node[0], node[1]
         parent_id, rank = tree[taxid]["parent_id"], tree[taxid]["rank"]
         if taxid not in visited:
