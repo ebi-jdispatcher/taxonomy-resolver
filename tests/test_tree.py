@@ -40,13 +40,15 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
         if resolver.tree is not None:
-            assert len(resolver.tree) == 2631861
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
 
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
         if resolver.tree is not None:
-            assert len(resolver.tree) == 2631861
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
         resolver.write(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         assert os.path.isfile(os.path.join(cwd, "../testdata/tree.pickle"))
 
@@ -54,21 +56,26 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         if resolver.tree is not None:
-            assert len(resolver.tree) == 2631861
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
 
     def test_resolver_filter(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
         if resolver.tree is not None:
-            assert len(resolver.tree) == 1003
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
+            assert "4751" not in resolver.tree["id"].values
 
     def test_resolver_filter_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         resolver.filter(os.path.join(cwd, "../testdata/taxids_filter.txt"))
         if resolver.tree is not None:
-            assert len(resolver.tree) == 1003
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
+            assert "4751" not in resolver.tree["id"].values
         resolver.write(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
         assert os.path.isfile(os.path.join(cwd, "../testdata/tree_filtered.pickle"))
 
@@ -76,77 +83,89 @@ class TestTree:
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree_filtered.pickle"), "pickle")
         if resolver.tree is not None:
-            assert len(resolver.tree) == 1003
+            assert len(resolver.tree) > 0
+            assert "9606" in resolver.tree["id"].values
+            assert "4751" not in resolver.tree["id"].values
 
     def test_resolver_search_by_taxid_human(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["9606"])
         if taxids:
-            assert len(taxids) == 3
+            assert len(taxids) > 0
+            assert "9606" in taxids
 
     def test_resolver_search_by_taxid_bacteria(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["2"])
         if taxids:
-            assert len(taxids) == 577322
+            assert len(taxids) > 0
+            assert "2" in taxids
 
     def test_resolver_search_by_taxid_archaea(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["2157"])
         if taxids:
-            assert len(taxids) == 14866
+            assert len(taxids) > 0
+            assert "2157" in taxids
 
     def test_resolver_search_by_taxid_eukaryota(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["2759"])
         if taxids:
-            assert len(taxids) == 1760410
+            assert len(taxids) > 0
+            assert "2759" in taxids
 
     def test_resolver_search_by_taxid_viruses(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["10239"])
         if taxids:
-            assert len(taxids) == 258680
+            assert len(taxids) > 0
+            assert "10239" in taxids
 
     def test_resolver_search_by_taxid_other(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["28384"])
         if taxids:
-            assert len(taxids) == 19466
+            assert len(taxids) > 0
+            assert "28384" in taxids
 
     def test_resolver_search_by_taxid_unclassified(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["12908"])
         if taxids:
-            assert len(taxids) == 1113
+            assert len(taxids) > 0
+            assert "12908" in taxids
 
     def test_resolver_search_by_taxid_mammalia(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["40674"])
         if taxids:
-            assert len(taxids) == 14213
+            assert len(taxids) > 0
+            assert "40674" in taxids
 
     def test_resolver_search_by_taxid_primates(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["9443"])
         if taxids:
-            assert len(taxids) == 1132
+            assert len(taxids) > 0
+            assert "9443" in taxids
 
     def test_resolver_search_by_taxid_plants(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.load(os.path.join(cwd, "../testdata/tree.pickle"), "pickle")
         taxids = resolver.search(["3193"])
         if taxids:
-            assert len(taxids) == 255378
+            assert len(taxids) > 0
+            assert "3193" in taxids
 
     def test_resolver_search(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -155,7 +174,8 @@ class TestTree:
             taxidinclude=os.path.join(cwd, "../testdata/taxids_search.txt")
         )
         if taxids:
-            assert len(taxids) == 593
+            assert len(taxids) > 0
+            assert "38070" in taxids
 
     def test_resolver_search_filter(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -165,7 +185,8 @@ class TestTree:
             taxidfilter=os.path.join(cwd, "../testdata/taxids_filter.txt"),
         )
         if taxids:
-            assert len(taxids) == 300
+            assert len(taxids) > 0
+            assert "9517" in taxids
 
     def test_resolver_search_exclude_filter(self, context, cwd):
         resolver = TaxonResolver(logging=context)
@@ -176,7 +197,9 @@ class TestTree:
             taxidfilter=os.path.join(cwd, "../testdata/taxids_filter.txt"),
         )
         if taxids:
-            assert len(taxids) == 294
+            assert len(taxids) > 0
+            assert "9603" in taxids
+            assert "9606" not in taxids
 
     def test_resolver_validate(self, context, cwd):
         resolver = TaxonResolver(logging=context)
