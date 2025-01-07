@@ -29,6 +29,7 @@ click = ">=8.1.7"
 requests = ">=2.32.2"
 pytest = ">=8.2.1"
 pandas = ">=2.2.2"
+tqdm = ">4.65.0"
 
 [build-system]
 requires = ["poetry-core"]
