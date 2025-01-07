@@ -14,6 +14,7 @@ import sys
 
 import pandas as pd
 import requests
+from tqdm import tqdm
 
 
 def get_logging_level(level: str = "INFO"):
@@ -92,11 +93,23 @@ def download_taxonomy_dump(outfile, extension="zip") -> None:
         url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip"
     else:
         url = "http://ftp.ebi.ac.uk/pub/databases/ncbi/taxonomy/taxdmp.zip"
-    r = requests.get(url, allow_redirects=True)
-    if r.ok:
-        open(outfile, "wb").write(r.content)
-    else:
-        print(f"Unable to Download Taxonomy Dump from {url}")
+    with requests.get(url, allow_redirects=True, stream=True) as r:
+        if r.ok:
+            total_size = int(r.headers.get("content-length", 0))
+            chunk_size = 1024
+
+            with open(outfile, "wb") as f, tqdm(
+                desc="Downloading",
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                unit_divisor=chunk_size,
+            ) as progress_bar:
+                for chunk in r.iter_content(chunk_size=chunk_size):
+                    f.write(chunk)
+                    progress_bar.update(len(chunk))
+        else:
+            print(f"Unable to Download Taxonomy Dump from {url}")
 
 
 def split_line(line) -> list:
