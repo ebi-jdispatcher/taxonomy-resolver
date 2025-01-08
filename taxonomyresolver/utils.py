@@ -15,6 +15,7 @@ import sys
 import pandas as pd
 import requests
 from tqdm import tqdm
+from collections import defaultdict
 
 
 def get_logging_level(level: str = "INFO"):
@@ -229,3 +230,39 @@ def get_parents(tree: pd.DataFrame, lft: int, rgt: int) -> list:
     :return: list of TaxIDs
     """
     return list(tree[(tree["lft"] < lft) & (tree["rgt"] > rgt)]["id"].values)
+
+
+def tree_to_newick(tree: pd.DataFrame) -> str:
+    """
+    Converts a hierarchical tree DataFrame into a Newick string.
+
+    :param tree: pandas DataFrame
+    :return: A string in Newick format.
+    """
+
+    # find the root of the tree (where id == parent_id)
+    try:
+        root_id = tree[tree["id"] == tree["parent_id"]]["id"].iloc[0]
+    except IndexError:
+        # assume the tree is sorted and use the first line (sort of rootless)
+        root_id = tree["id"].iloc[0]
+
+    # build a dictionary of children for each node
+    children = defaultdict(list)
+    for _, row in tqdm(tree.iterrows(), total=len(tree), desc="Generating Newick"):
+        if row["id"] != row["parent_id"]:
+            children[row["parent_id"]].append(row["id"])
+
+    # process nodes in reverse order of `depth` (from leaf nodes to the root)
+    newick = {}
+    for depth in sorted(tree["depth"].unique(), reverse=True):
+        nodes_at_depth = tree[tree["depth"] == depth]["id"]
+        for node_id in nodes_at_depth:
+            if node_id in children:
+                subtree = ",".join(newick[child] for child in children[node_id])
+                newick[node_id] = f"({subtree}){node_id}"
+            else:
+                # leaf node
+                newick[node_id] = f"{node_id}"
+
+    return newick[root_id] + ";"
