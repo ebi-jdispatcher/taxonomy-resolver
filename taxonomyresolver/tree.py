@@ -24,6 +24,7 @@ from taxonomyresolver.utils import (
     split_line,
     tree_reparenting,
     tree_traversal,
+    tree_to_newick,
 )
 
 
@@ -84,11 +85,14 @@ def write_tree(
 
     :param tree: pandas DataFrame
     :param outputfile: Path to outputfile
-    :param outputformat: currently "pickle" format
+    :param outputformat: currently "pickle" or "newick" format
     :return: (side-effects) writes to file
     """
     if outputformat == "pickle" and tree is not None:
         tree.to_pickle(outputfile, protocol=4)
+    elif outputformat == "newick" and tree is not None:
+        with open(outputfile, "w") as outfile:
+            outfile.write(tree_to_newick(tree) + "\n")
     # elif outputformat == "shelve":
     #     with shelve.open(outputfile) as outfile:
     #         outfile["tree"] = tree
