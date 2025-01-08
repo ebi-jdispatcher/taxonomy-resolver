@@ -43,7 +43,6 @@ class TestTree:
             assert len(resolver.tree) > 0
             assert "9606" in resolver.tree["id"].values
 
-    @pytest.mark.skip(reason="Skip test by default!")
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
