@@ -17,6 +17,7 @@ from taxonomyresolver.utils import (
     print_and_exit,
     validate_inputs_outputs,
 )
+from taxonomyresolver.tree import write_tree
 
 
 # reusing click args and options
@@ -174,7 +175,7 @@ def download(
     default="pickle",
     required=False,
     multiple=False,
-    help="Output format (currently: 'pickle').",
+    help="Output format (currently: 'pickle' or 'newick').",
 )
 @click.option(
     "-taxidsf",
@@ -290,6 +291,16 @@ def build(
     help="Input format (currently: 'pickle').",
 )
 @click.option(
+    "-outf",
+    "--outformat",
+    "outformat",
+    type=str,
+    default="txt",
+    required=False,
+    multiple=False,
+    help="Input format (currently: 'txt' or 'newick').",
+)
+@click.option(
     "-taxid",
     "--taxid",
     "taxids",
@@ -354,6 +365,7 @@ def search(
     infile: str,
     outfile: str | None,
     informat: str,
+    outformat: str,
     taxids: str | None,
     taxidincludes: str | None,
     taxidsexcludes: str | None,
@@ -421,10 +433,20 @@ def search(
         ignoreinvalid=ignoreinvalid,
     )
     if outfile:
-        with open(outfile, "w") as outf:
-            if tax_ids:
-                outf.write("\n".join(list(tax_ids)))
-        logging.info(f"Wrote list of TaxIDS in {outfile}.")
+        if outformat == "newick" and resolver.tree is not None and tax_ids:
+            subset = (
+                resolver.tree[resolver.tree["id"].isin(list(tax_ids))]
+                .sort_values("lft")
+                .reset_index()
+            )
+            write_tree(subset, outputfile=outfile, outputformat=outformat)
+        else:
+            with open(outfile, "w") as outf:
+                if tax_ids:
+
+                    outf.write("\n".join(list(tax_ids)))
+                    outf.write("\n".join(list(tax_ids)))
+        logging.info(f"Wrote list of TaxIDS in {outfile} in '{outformat}' format.")
     else:
         try:
             if tax_ids:
