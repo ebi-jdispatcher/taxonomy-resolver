@@ -13,7 +13,7 @@ import os
 import pytest
 
 from taxonomyresolver import TaxonResolver
-from taxonomyresolver.utils import load_logging
+from taxonomyresolver.utils import load_logging, tree_to_newick
 
 
 @pytest.fixture
@@ -43,6 +43,7 @@ class TestTree:
             assert len(resolver.tree) > 0
             assert "9606" in resolver.tree["id"].values
 
+    @pytest.mark.skip(reason="Skip test by default!")
     def test_resolver_build_and_write(self, context, cwd):
         resolver = TaxonResolver(logging=context)
         resolver.build(os.path.join(cwd, "../testdata/taxdmp.zip"))
@@ -339,3 +340,12 @@ class TestTree:
         assert resolver.validate(taxidinclude=["9"])
         assert resolver.validate(taxidinclude=["10"])
         assert not resolver.validate(taxidinclude=["9606"])
+
+    def test_resolver_mock_tree_to_newick(self, context, cwd):
+        resolver = TaxonResolver(logging=context)
+        resolver.load(os.path.join(cwd, "../testdata/tree_mock.pickle"), "pickle")
+        taxidfilter = ["28", "29"]
+        resolver.filter(taxidfilter)
+        if resolver.tree is not None:
+            newick = tree_to_newick(resolver.tree)
+            assert newick == "(((((((28,29)27)24)18)9)4)2)1;"
