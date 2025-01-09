@@ -1,3 +1,10 @@
+**1.1.0**
+
+- Adds ``newick`` output format, available on the build and search CLI commands
+- Adds progress reporting powered by `tqdm`_ for taxonomy download, reading, building and searching
+- Adds CLI tests, improves tree tests and increases test coverage overall
+- Some other improvements and updates to `README.rst`_
+
 **1.0.0**
 
 - First major release 🎉
@@ -86,3 +93,4 @@
 .. _Poetry: https://python-poetry.org/
 .. _CONTRIBUTING.rst: CONTRIBUTING.rst
 .. _README.rst: README.rst
+.. _tqdm: https://github.com/tqdm/tqdm
