@@ -25,6 +25,7 @@ The main features of Taxonomy Resolver are:
 6. Generate lists of all children TaxIDs that compose a particular Node (sub-tree)
 7. Generate lists of children TaxIDs based on a list of included and excluded TaxIDs (included and excluded sub-trees)
 8. Filtering the resulting list of children TaxIDs, for example to cleanup TaxIDs that are not observed in a dataset of interest
+9. Generating trees in ``newick`` format using the `build` or `search` commands
 
 Taxonomy Resolver initially builds a tree hierarchy structure resulting in deeply nested dictionaries. To retrieve a full tree or a sub-tree, a lot of iteration takes place, following the path from the node of interest down the hierarchy. This approach does not scale well, especially for very large trees. Thus, in Taxonomy Resolver, the tree is represented following a different approach, commonly referred to as the Nested Set Model. In the Nested Set Model, we can look at a tree hierarchy differently, not as connected nodes, but as nested containers. The nested set model is a particular technique for representing nested sets in relational databases, which we implement here in a pandas ``DataFrame``. For that, the full tree is traversed with Modified Preorder Tree Traversal strategy. In a preorder traversal, the root node is visited first, then recursively a preorder traversal of the left sub-tree, followed by a recursive preorder traversal of the right subtree, in order, until every node has been visited. The modified strategy allows us to capture the 'left' and 'right' (``lft`` and ``rgt``, respectively) boundaries of each nested container. Querying and searching is much faster with this approach because finding a subtree is as simple as filtering/searching for the nodes where ``lft > Node's lft`` and ``rgt < Node's rgt``. Likewise, find the full path to a node is as simple as filtering/searching for the nodes where ``lft < Node's lft`` and ``rgt > Node's rgt``.
 
@@ -221,6 +222,7 @@ Additional help is provided for each command, for example, running ``taxonomy-re
     -in, --infile TEXT             Path to input NCBI BLAST dump or a prebuilt tree file, (currently: 'pickle').  [required]
     -out, --outfile TEXT           Path to output file.
     -inf, --informat TEXT          Input format (currently: 'pickle').
+    -outf, --outformat TEXT        Input format (currently: 'txt' or 'newick').
     -taxid, --taxid TEXT           Comma-separated TaxIDs or pass multiple values. Output to STDOUT by default, unless an output file is provided.
     -taxids, --taxidinclude TEXT   Path to Taxonomy id list file used to search the Tree.
     -taxidexc, --taxidexc TEXT     Comma-separated TaxIDs or pass multiple values.
