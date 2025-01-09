@@ -62,6 +62,7 @@ Taxonomy Resolver has been developed with simplicity in mind and it can be used 
 * **generating** taxonomy lists that compose any subtree, at any level of the taxonomy hierarchy
 * **filtering** a tree based on the inclusion and/or exclusion of certain TaxIDs
 * **writing and loading** tree data structures using Python’s object serialisation
+* **generating** complete and partial tress in NEWICK format 
 
 # Implementation
 
