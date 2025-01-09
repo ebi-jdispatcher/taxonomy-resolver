@@ -443,8 +443,6 @@ def search(
         else:
             with open(outfile, "w") as outf:
                 if tax_ids:
-
-                    outf.write("\n".join(list(tax_ids)))
                     outf.write("\n".join(list(tax_ids)))
         logging.info(f"Wrote list of TaxIDS in {outfile} in '{outformat}' format.")
     else:
