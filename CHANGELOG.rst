@@ -1,3 +1,8 @@
+**1.1.1**
+
+- Minor improvements and fixes for the JOSS paper
+- Adds documentation about ``newick`` to `README.rst`_
+
 **1.1.0**
 
 - Adds ``newick`` output format, available on the build and search CLI commands
