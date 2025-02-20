@@ -30,7 +30,7 @@ authors:
     orcid: 0000-0002-4494-5124
     affiliation: 1
 affiliations:
-  - name: European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, UK
+  - name: European Molecular Biology Laboratory, European Bioinformatics Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton, Cambridge CB10 1SD, United Kingdom
     index: 1
 date: 26 September 2024
 bibliography: paper.bib
