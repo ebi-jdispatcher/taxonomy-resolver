@@ -309,8 +309,6 @@ Changelog
 
 See release notes on `CHANGELOG.rst`_
 
-Acknowledgments
-===============
 Citation
 ========
 
@@ -319,7 +317,11 @@ If you use Taxonomy Resolver in your work, please cite:
     Madeira et al., (2025). Taxonomy Resolver: A Python package for building and filtering taxonomy trees. 
     *Journal of Open Source Software*, 10(106), 7604, doi: `10.21105/joss.07604`_
 
-I would like to thank Adrian Tivey for insightful discussions.
+
+Acknowledgements
+================
+
+We would like to thank Russell Neches, Thiago Britto-Borges and Adrian Tivey for their suggestions and insights.
 
 License
 =======
