@@ -6,8 +6,8 @@
 .. |PyPI license| image:: https://img.shields.io/pypi/l/taxonomy-resolver.svg?label=License&color=blue
    :target: https://pypi.org/project/taxonomy-resolver/
 
-.. |JOSS status| image:: https://joss.theoj.org/papers/f4753608becbcdb391b48ee95f389400/status.svg
-   :target: https://joss.theoj.org/papers/f4753608becbcdb391b48ee95f389400
+.. |JOSS status| image:: https://joss.theoj.org/papers/10.21105/joss.07604/status.svg
+   :target: https://joss.theoj.org/papers/10.21105/joss.07604
 
 #################
 Taxonomy Resolver
