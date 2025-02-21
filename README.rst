@@ -311,6 +311,13 @@ See release notes on `CHANGELOG.rst`_
 
 Acknowledgments
 ===============
+Citation
+========
+
+If you use Taxonomy Resolver in your work, please cite:
+
+    Madeira et al., (2025). Taxonomy Resolver: A Python package for building and filtering taxonomy trees. 
+    *Journal of Open Source Software*, 10(106), 7604, doi: `10.21105/joss.07604`_
 
 I would like to thank Adrian Tivey for insightful discussions.
 
@@ -331,3 +338,4 @@ Apache License 2.0. See `license`_ for details.
 .. _CONTRIBUTING.rst: CONTRIBUTING.rst
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
 .. _EMBL-EBI: https://www.ebi.ac.uk/
+.. _10.21105/joss.07604: https://doi.org/10.21105/joss.07604
