@@ -110,7 +110,7 @@ def cli():
     default="zip",
     required=False,
     multiple=False,
-    help="Output format (currently: 'zip' or 'tar.gz').",
+    help="Output format (currently: 'zip', 'tar.gz' or 'tar.Z').",
 )
 @add_common(common_options)
 def download(
@@ -120,7 +120,7 @@ def download(
     log_output: str | None = None,
     quiet: bool = False,
 ):
-    """Download the NCBI Taxonomy dump file ('taxdmp.zip')."""
+    """Download the NCBI Taxonomy dump file (extensions: 'zip', 'tar.gz', 'tar.Z')."""
 
     logging = load_logging(log_level, log_output, disabled=quiet)
 

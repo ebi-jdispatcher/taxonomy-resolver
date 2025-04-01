@@ -86,14 +86,19 @@ def download_taxonomy_dump(outfile, extension="zip") -> None:
     Download Taxonomy Dump file from NCBI Taxonomy FTP server.
 
     :param outfile: Path to output file
-    :param extension: (str) "zip" or "tar.gz"
+    :param extension: (str) "zip", "tar.gz" or "tar.Z"
     :return: (side-effects) writes file
     """
 
     if extension == "zip":
         url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdmp.zip"
+    elif extension == "tar.gz":
+        url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.gz"
+    elif extension == "tar.Z":
+        url = "https://ftp.ncbi.nih.gov/pub/taxonomy/taxdump.tar.Z"
     else:
-        url = "http://ftp.ebi.ac.uk/pub/databases/ncbi/taxonomy/taxdmp.zip"
+        print(f"Taxonomy Dump '{extension}' not implemented!")
+        return
     with requests.get(url, allow_redirects=True, stream=True) as r:
         if r.ok:
             total_size = int(r.headers.get("content-length", 0))

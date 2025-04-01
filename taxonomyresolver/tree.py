@@ -9,6 +9,7 @@ Taxonomy Resolver
 """
 
 import io
+import tarfile
 import zipfile
 
 import pandas as pd
@@ -30,8 +31,8 @@ from taxonomyresolver.utils import (
 
 def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
     """
-    Given the path to NCBI Taxonomy 'taxdmp.zip' file or simply a
-    'nodes.dmp' file, builds a slim tree data structure.
+    Given the path to NCBI Taxonomy 'taxdmp.zip', 'taxdump.tar.gz', 'taxdump.tar.Z'
+    or simply a 'nodes.dmp' file, builds a slim tree data structure.
 
     :param inputfile: Path to inputfile
     :param root: TaxID of the root Node
@@ -43,14 +44,22 @@ def build_tree(inputfile: str, root: str = "1") -> pd.DataFrame:
     if zipfile.is_zipfile(inputfile):
         with zipfile.ZipFile(inputfile) as taxdmp:
             dmp = taxdmp.open("nodes.dmp")
+    elif tarfile.is_tarfile(inputfile):
+        with tarfile.open(inputfile, "r:*") as taxdmp:
+            dmp = taxdmp.extractfile("nodes.dmp")
     else:
         dmp = open(inputfile, "rb")
-    for line in tqdm(
-        io.TextIOWrapper(dmp, encoding="unicode_escape"), desc="Reading tree dump"
-    ):
-        fields = split_line(line)
-        tree[fields[0]] = {"id": fields[0], "parent_id": fields[1], "rank": fields[2]}
-    dmp.close()
+    if dmp:
+        for line in tqdm(
+            io.TextIOWrapper(dmp, encoding="unicode_escape"), desc="Reading tree dump"
+        ):
+            fields = split_line(line)
+            tree[fields[0]] = {
+                "id": fields[0],
+                "parent_id": fields[1],
+                "rank": fields[2],
+            }
+        dmp.close()
     # creating a full tree
     tree = tree_reparenting(tree)
 

@@ -148,7 +148,7 @@ Example of typical usage of the Taxonomy Resolver module is provided below:
 
   resolver = TaxonResolver()
 
-  # Download the NCBI Taxonomy Data Dump
+  # Download the NCBI Taxonomy Data Dump ('zip', 'tar.gz' or 'tar.Z')
   dumpfile = "taxdmp.zip"
   resolver.download(dumpfile, "zip")
 
@@ -205,7 +205,7 @@ Explore the CLI by running ``taxonomy-resolver (COMMAND) --help``
 
   Commands:
     build     Build a NCBI Taxonomy Tree data structure.
-    download  Download the NCBI Taxonomy dump file ('taxdmp.zip').
+    download  Download the NCBI Taxonomy dump file (extensions: 'zip', 'tar.gz', 'tar.Z').
     search    Searches a Tree data structure and writes a list of TaxIDs.
     validate  Validates a list of TaxIDs against a Tree data structure.
 
@@ -341,3 +341,7 @@ Apache License 2.0. See `license`_ for details.
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
 .. _EMBL-EBI: https://www.ebi.ac.uk/
 .. _10.21105/joss.07604: https://doi.org/10.21105/joss.07604
+
+.. create tags
+git tag 1.0.0
+git push origin --tags
