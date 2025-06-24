@@ -341,7 +341,3 @@ Apache License 2.0. See `license`_ for details.
 .. _nodes_mock.dmp: testdata/nodes_mock.dmp
 .. _EMBL-EBI: https://www.ebi.ac.uk/
 .. _10.21105/joss.07604: https://doi.org/10.21105/joss.07604
-
-.. create tags
-git tag 1.0.0
-git push origin --tags
